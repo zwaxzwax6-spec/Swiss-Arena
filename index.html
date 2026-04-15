@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Swiss Arena · Plaque NFC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { -webkit-font-smoothing: antialiased; }
+  html, body {
+    font-family: 'Inter', sans-serif;
+    background: #000;
+    margin: 0;
+    overflow-x: hidden;
+    letter-spacing: -0.01em;
+  }
+  .font-serif { font-family: 'Instrument Serif', serif; letter-spacing: -0.02em; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .delay-1 { animation-delay: 0.15s; }
+  .delay-2 { animation-delay: 0.35s; }
+  .delay-3 { animation-delay: 0.55s; }
+  .delay-4 { animation-delay: 0.75s; }
+
+  @keyframes softIn {
+    from { opacity: 0; filter: blur(12px); transform: translateY(12px); }
+    to { opacity: 1; filter: blur(0); transform: translateY(0); }
+  }
+  .soft-in { animation: softIn 1.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+  /* Headline with subtle blue glow matching the plaque halo */
+  .headline-glow {
+    text-shadow:
+      0 0 60px rgba(160, 210, 255, 0.18),
+      0 0 120px rgba(120, 180, 255, 0.08);
+  }
+
+  /* Clean glass pill — soft, minimal border */
+  .glass-pill {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 8px 32px rgba(0, 10, 40, 0.3);
+  }
+
+  /* Primary CTA — soft premium glow, not sci-fi */
+  .cta-premium {
+    background: #ffffff;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.6),
+      0 10px 40px rgba(160, 210, 255, 0.25),
+      0 20px 80px rgba(100, 170, 255, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
+    transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .cta-premium:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.8),
+      0 14px 50px rgba(160, 210, 255, 0.4),
+      0 28px 100px rgba(100, 170, 255, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
+  }
+
+  /* Top gradient fade for headline legibility */
+  .top-fade {
+    background: linear-gradient(to bottom,
+      rgba(0, 5, 20, 0.55) 0%,
+      rgba(0, 5, 20, 0.25) 40%,
+      rgba(0, 0, 0, 0) 75%);
+  }
+
+  /* Soft side vignette */
+  .vignette {
+    background: radial-gradient(ellipse 100% 80% at center 45%, transparent 0%, transparent 55%, rgba(0, 0, 0, 0.5) 100%);
+  }
+
+  /* Section atmospheric glow — light falling from above */
+  .section-glow {
+    background: radial-gradient(ellipse 70% 60% at 50% 0%,
+      rgba(100, 160, 230, 0.09) 0%,
+      rgba(60, 110, 200, 0.04) 30%,
+      transparent 70%);
+  }
+
+  /* Section atmospheric glow — light rising from below */
+  .section-rise {
+    background: radial-gradient(ellipse 80% 55% at 50% 100%,
+      rgba(100, 160, 230, 0.10) 0%,
+      rgba(60, 110, 200, 0.04) 35%,
+      transparent 75%);
+  }
+
+  /* Card glass — softer than stat card, lifts on hover */
+  .card-glass {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 30px 80px rgba(0, 10, 40, 0.3);
+    transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .card-glass:hover {
+    border-color: rgba(160, 210, 255, 0.2);
+    transform: translateY(-6px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.12),
+      0 40px 120px rgba(60, 120, 200, 0.18);
+  }
+
+  /* Section focus — converging spotlight */
+  .section-focus {
+    background: radial-gradient(ellipse 55% 50% at 50% 55%,
+      rgba(120, 180, 255, 0.12) 0%,
+      rgba(60, 110, 200, 0.05) 40%,
+      transparent 78%);
+  }
+
+  /* Offer card — the premium moment, slight blue tint */
+  .offer-card {
+    background: linear-gradient(180deg,
+      rgba(180, 210, 255, 0.055) 0%,
+      rgba(255, 255, 255, 0.015) 100%);
+    backdrop-filter: blur(32px) saturate(160%);
+    -webkit-backdrop-filter: blur(32px) saturate(160%);
+    border: 1px solid rgba(160, 210, 255, 0.15);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.02),
+      0 50px 140px rgba(60, 120, 200, 0.22),
+      0 0 0 1px rgba(255, 255, 255, 0.02);
+  }
+
+  /* Section calm — subtle reading glow, quieter than others */
+  .section-calm {
+    background: radial-gradient(ellipse 60% 40% at 50% 25%,
+      rgba(100, 160, 230, 0.06) 0%,
+      transparent 70%);
+  }
+
+  /* Section final — most dramatic, two-layer: spotlight + corner darkening */
+  .section-final {
+    background:
+      radial-gradient(ellipse 65% 60% at 50% 45%,
+        rgba(120, 180, 255, 0.15) 0%,
+        rgba(60, 110, 200, 0.06) 40%,
+        transparent 75%),
+      radial-gradient(ellipse 130% 100% at 50% 50%,
+        transparent 45%,
+        rgba(0, 5, 20, 0.55) 100%);
+  }
+
+  /* Section calm — diffuse ambient, post-decision quiet */
+  .section-calm {
+    background: radial-gradient(ellipse 75% 65% at 50% 50%,
+      rgba(100, 160, 230, 0.05) 0%,
+      rgba(60, 110, 200, 0.02) 45%,
+      transparent 80%);
+  }
+
+  /* Stat card glass — deeper than hero tag, more premium */
+  .stat-glass {
+    background: linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      inset 0 -1px 0 rgba(255,255,255,0.02),
+      0 40px 100px rgba(0, 10, 40, 0.4);
+  }
+
+  /* Section label divider lines */
+  .label-line {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+  }
+
+  /* Scroll-triggered reveal — orchestrated fade-up */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal.delay-a { transition-delay: 0.12s; }
+  .reveal.delay-b { transition-delay: 0.24s; }
+  .reveal.delay-c { transition-delay: 0.36s; }
+  .reveal.delay-d { transition-delay: 0.48s; }
+
+  /* Respect users who opt out of motion */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .reveal.delay-a,
+    .reveal.delay-b,
+    .reveal.delay-c,
+    .reveal.delay-d {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .fade-up, .soft-in, .blur-in {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      filter: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<section class="relative min-h-screen w-full overflow-hidden bg-black text-white">
+
+  <!-- Background video -->
+  <div class="absolute inset-0 z-0 overflow-hidden">
+    <video
+      autoplay loop muted playsinline
+      class="h-full w-full object-cover object-center"
+      src="https://res.cloudinary.com/duia2hrlv/video/upload/v1776201141/hf_20260414_210118_f8b7b6df-adef-493f-8117-108be0b64316_1_ec6w4w.mp4">
+    </video>
+    <div class="absolute inset-x-0 top-0 h-2/3 top-fade"></div>
+    <div class="absolute inset-0 vignette"></div>
+  </div>
+
+  <!-- Top Bar -->
+  <nav class="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-5 md:px-14 py-5 md:py-7 fade-up">
+    <!-- Logo -->
+    <img src="LogoSwiss.png" alt="Swiss Arena" class="h-10 w-auto" />
+
+    <!-- Top CTA -->
+    <button class="group flex items-center gap-3 bg-white/[0.06] backdrop-blur-xl border border-white/15 hover:bg-white hover:text-black transition-all duration-500 pl-5 pr-1.5 py-1.5 rounded-full">
+      <span class="text-[13px] font-medium">Commander</span>
+      <span class="text-white/40 group-hover:text-black/40 text-[12px]">·</span>
+      <span class="text-[13px] font-medium">69 CHF</span>
+      <div class="h-7 w-7 rounded-full bg-white group-hover:bg-black flex items-center justify-center transition-colors">
+        <svg class="h-3 w-3 text-black group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M5 12h14M13 6l6 6-6 6"/>
+        </svg>
+      </div>
+    </button>
+  </nav>
+
+  <!-- Hero Content -->
+  <div class="relative z-10 flex flex-col items-center px-6 pt-32 sm:pt-28 md:pt-20 text-center">
+
+    <!-- Tag -->
+    <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-pill mb-5 fade-up delay-1">
+      <div class="h-1.5 w-1.5 rounded-full bg-white/80"></div>
+      <span class="text-[11px] md:text-[12px] text-white/85 tracking-[0.08em] font-light">
+        Plaque NFC · Conçue en Suisse · Livraison 24h
+      </span>
+    </div>
+
+    <!-- Headline -->
+    <h1 class="font-extralight text-white leading-[1.15] tracking-[-0.035em] max-w-[1000px]
+               text-[24px] sm:text-[34px] md:text-[42px] lg:text-[50px] xl:text-[56px]
+               headline-glow soft-in">
+      Chaque jour sans avis,<br>
+      un client va chez <span class="font-serif italic font-normal">le concurrent.</span>
+    </h1>
+
+    <!-- Sub-headline -->
+    <p class="mt-5 text-[14px] md:text-[16px] text-white/65 max-w-xl leading-[1.55] font-light fade-up delay-3">
+      Plus d'avis Google. Plus de clients qui vous trouvent.<br class="hidden md:block">
+      Plus de chiffre qui rentre.
+    </p>
+
+    <!-- CTA -->
+    <div class="mt-7 fade-up delay-4">
+      <button class="cta-premium group text-black pl-7 pr-2 py-2 rounded-full inline-flex items-center gap-3">
+        <span class="text-[14px] font-medium">Commander</span>
+        <span class="text-black/40 text-[12px]">·</span>
+        <span class="text-[14px] font-medium">69 CHF</span>
+        <div class="h-8 w-8 rounded-full bg-black flex items-center justify-center group-hover:translate-x-0.5 transition-transform duration-500">
+          <svg class="h-3.5 w-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
+        </div>
+      </button>
+    </div>
+  </div>
+
+</section>
+
+<!-- ============================================= -->
+<!-- SECTION 01 — LA RÉALITÉ                        -->
+<!-- ============================================= -->
+<section class="relative bg-black text-white overflow-hidden">
+
+  <!-- Atmospheric glow from above -->
+  <div class="absolute inset-x-0 top-0 h-[700px] section-glow pointer-events-none"></div>
+
+  <!-- Subtle floor vignette -->
+  <div class="absolute inset-x-0 bottom-0 h-[400px] pointer-events-none"
+       style="background: linear-gradient(to top, rgba(0,5,20,0.6), transparent);"></div>
+
+  <div class="relative max-w-4xl mx-auto px-6 py-20 md:py-44 text-center">
+
+    <!-- Chapter label -->
+    <div class="inline-flex items-center gap-4 mb-8 md:mb-12 reveal">
+      <div class="h-px w-10 bg-white/25"></div>
+      <span class="text-[11px] tracking-[0.35em] uppercase text-white/50 font-light">
+        01 · La réalité
+      </span>
+      <div class="h-px w-10 bg-white/25"></div>
+    </div>
+
+    <!-- Headline -->
+    <h2 class="font-extralight text-white leading-[1.1] tracking-[-0.03em]
+               text-[32px] sm:text-[40px] md:text-[48px] lg:text-[54px]
+               headline-glow reveal delay-a">
+      Sans étoiles,<br>
+      <span class="font-serif italic font-normal">vous n'existez pas.</span>
+    </h2>
+
+    <!-- Body -->
+    <p class="mt-10 text-[15px] md:text-[17px] text-white/65 max-w-lg mx-auto leading-[1.65] font-light reveal delay-b">
+      Il y a trois fiches Google dans votre rue.<br>
+      Deux font tourner leur commerce avec.<br>
+      <span class="text-white/85">La vôtre ne fait rien.</span>
+    </p>
+
+    <!-- Stat card -->
+    <div class="mt-12 md:mt-20 stat-glass rounded-[28px] px-8 py-12 md:px-16 md:py-16 reveal delay-c">
+
+      <!-- Tiny top label -->
+      <div class="flex items-center justify-center gap-3 mb-8">
+        <div class="h-px w-6 bg-white/20"></div>
+        <span class="text-[10px] tracking-[0.3em] uppercase text-white/40">Le chiffre</span>
+        <div class="h-px w-6 bg-white/20"></div>
+      </div>
+
+      <!-- Big number -->
+      <div class="font-extralight text-white leading-[0.9] tracking-[-0.05em] headline-glow
+                  text-[76px] sm:text-[110px] md:text-[150px] lg:text-[170px]">
+        98<span class="text-white/35 text-[55%] align-top">%</span>
+      </div>
+
+      <!-- Explanation -->
+      <p class="mt-6 text-[15px] md:text-[17px] text-white/75 max-w-md mx-auto leading-[1.55] font-light">
+        des consommateurs consultent les avis<br class="hidden md:block">
+        avant de choisir un commerce local.
+      </p>
+
+      <!-- Source -->
+      <div class="mt-10 pt-6 border-t border-white/10">
+        <span class="text-[10px] tracking-[0.25em] uppercase text-white/40 font-light">
+          Source — BrightLocal Consumer Review Survey · 2024
+        </span>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ============================================= -->
+<!-- SECTION 02 — LA TRANSFORMATION                 -->
+<!-- ============================================= -->
+<section class="relative bg-black text-white overflow-hidden">
+
+  <!-- Atmospheric glow rising from below -->
+  <div class="absolute inset-x-0 bottom-0 h-[800px] section-rise pointer-events-none"></div>
+
+  <!-- Top fade -->
+  <div class="absolute inset-x-0 top-0 h-[300px] pointer-events-none"
+       style="background: linear-gradient(to bottom, rgba(0,5,20,0.5), transparent);"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 py-20 md:py-44">
+
+    <!-- Header block: centered -->
+    <div class="text-center">
+
+      <!-- Chapter label -->
+      <div class="inline-flex items-center gap-4 mb-8 md:mb-12 reveal">
+        <div class="h-px w-10 bg-white/25"></div>
+        <span class="text-[11px] tracking-[0.35em] uppercase text-white/50 font-light">
+          02 · La transformation
+        </span>
+        <div class="h-px w-10 bg-white/25"></div>
+      </div>
+
+      <!-- Headline -->
+      <h2 class="font-extralight text-white leading-[1.15] tracking-[-0.03em]
+                 text-[26px] sm:text-[34px] md:text-[46px] lg:text-[52px]
+                 headline-glow max-w-4xl mx-auto reveal delay-a">
+        Le jour où votre fiche bascule,<br>
+        <span class="font-serif italic font-normal">tout change.</span>
+      </h2>
+
+    </div>
+
+    <!-- Cards grid -->
+    <div class="mt-12 md:mt-24 grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+
+      <!-- CARD 01 -->
+      <div class="card-glass rounded-[28px] p-8 md:p-10 flex flex-col reveal delay-b">
+        <div class="flex items-center gap-3 mb-10">
+          <svg class="h-4 w-4 text-white/55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
+          <span class="text-[10px] tracking-[0.3em] uppercase text-white/45 font-light">01</span>
+        </div>
+        <h3 class="font-extralight text-white leading-[1.2] tracking-[-0.02em] text-[20px] md:text-[26px] mb-5">
+          Les inconnus <span class="font-serif italic font-normal">vous trouvent.</span>
+        </h3>
+        <p class="text-[14px] md:text-[15px] text-white/60 leading-[1.65] font-light">
+          Des clients que vous n'avez jamais vus poussent votre porte. Parce qu'ils vous ont vu en premier sur Google.
+        </p>
+      </div>
+
+      <!-- CARD 02 -->
+      <div class="card-glass rounded-[28px] p-8 md:p-10 flex flex-col reveal delay-c">
+        <div class="flex items-center gap-3 mb-10">
+          <svg class="h-4 w-4 text-white/55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
+          <span class="text-[10px] tracking-[0.3em] uppercase text-white/45 font-light">02</span>
+        </div>
+        <h3 class="font-extralight text-white leading-[1.2] tracking-[-0.02em] text-[20px] md:text-[26px] mb-5">
+          Les semaines creuses <span class="font-serif italic font-normal">disparaissent.</span>
+        </h3>
+        <p class="text-[14px] md:text-[15px] text-white/60 leading-[1.65] font-light">
+          Sans flyers. Sans pub. Sans prospection. Juste parce que Google vous met en tête.
+        </p>
+      </div>
+
+      <!-- CARD 03 -->
+      <div class="card-glass rounded-[28px] p-8 md:p-10 flex flex-col reveal delay-d">
+        <div class="flex items-center gap-3 mb-10">
+          <svg class="h-4 w-4 text-white/55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
+          <span class="text-[10px] tracking-[0.3em] uppercase text-white/45 font-light">03</span>
+        </div>
+        <h3 class="font-extralight text-white leading-[1.2] tracking-[-0.02em] text-[20px] md:text-[26px] mb-5">
+          Le quartier ne parle <span class="font-serif italic font-normal">que de vous.</span>
+        </h3>
+        <p class="text-[14px] md:text-[15px] text-white/60 leading-[1.65] font-light">
+          Celui qu'on recommande. Celui qu'on choisit sans hésiter. Celui qu'on a peur de rater.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ============================================= -->
+<!-- SECTION 03 — L'OFFRE                           -->
+<!-- ============================================= -->
+<section class="relative bg-black text-white overflow-hidden">
+
+  <!-- Converging spotlight -->
+  <div class="absolute inset-0 section-focus pointer-events-none"></div>
+
+  <!-- Top fade from previous section -->
+  <div class="absolute inset-x-0 top-0 h-[300px] pointer-events-none"
+       style="background: linear-gradient(to bottom, rgba(0,5,20,0.5), transparent);"></div>
+
+  <div class="relative max-w-5xl mx-auto px-6 py-20 md:py-44">
+
+    <!-- Header -->
+    <div class="text-center">
+
+      <!-- Chapter label -->
+      <div class="inline-flex items-center gap-4 mb-8 md:mb-12 reveal">
+        <div class="h-px w-10 bg-white/25"></div>
+        <span class="text-[11px] tracking-[0.35em] uppercase text-white/50 font-light">
+          03 · L'offre
+        </span>
+        <div class="h-px w-10 bg-white/25"></div>
+      </div>
+
+      <!-- Headline -->
+      <h2 class="font-extralight text-white leading-[1.1] tracking-[-0.03em]
+                 text-[34px] sm:text-[44px] md:text-[52px] lg:text-[58px]
+                 headline-glow reveal delay-a">
+        69 CHF. <span class="font-serif italic font-normal">Une fois.</span>
+      </h2>
+
+      <!-- Ancrage -->
+      <p class="mt-8 text-[15px] md:text-[17px] text-white/65 max-w-xl mx-auto leading-[1.65] font-light reveal delay-b">
+        Un seul client. Un seul repas. Une seule visite.<br class="hidden md:block">
+        <span class="text-white/85">Et la plaque est déjà rentabilisée.</span>
+      </p>
+
+    </div>
+
+    <!-- Product card -->
+    <div class="mt-12 md:mt-24 max-w-[480px] mx-auto reveal delay-c">
+
+      <div class="offer-card rounded-[32px] p-8 md:p-10 relative">
+
+        <!-- Edition badge -->
+        <div class="flex justify-center mb-10">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04]">
+            <div class="h-1.5 w-1.5 rounded-full bg-white/80"></div>
+            <span class="text-[10px] tracking-[0.28em] uppercase text-white/75 font-light">Édition Lancement</span>
+          </div>
+        </div>
+
+        <!-- Product name -->
+        <div class="text-center mb-10">
+          <h3 class="text-[20px] md:text-[22px] text-white/95 font-extralight tracking-[-0.01em]">
+            Plaque NFC <span class="font-serif italic font-normal">Swiss Arena</span>
+          </h3>
+        </div>
+
+        <!-- Price block -->
+        <div class="text-center mb-2">
+          <span class="text-[14px] text-white/35 line-through font-light">119 CHF</span>
+        </div>
+        <div class="flex items-baseline justify-center gap-2.5 mb-5">
+          <span class="text-[84px] sm:text-[100px] md:text-[116px] font-extralight leading-none tracking-[-0.04em] text-white headline-glow">69</span>
+          <span class="text-[20px] sm:text-[24px] md:text-[26px] font-light text-white/70">CHF</span>
+        </div>
+        <div class="flex justify-center mb-12">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/12 bg-white/[0.02]">
+            <span class="text-[10px] tracking-[0.2em] uppercase text-white/90 font-medium">−42%</span>
+            <span class="text-white/20 text-[9px]">·</span>
+            <span class="text-[10px] tracking-[0.15em] uppercase text-white/55 font-light">prix de lancement</span>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="h-px bg-gradient-to-r from-transparent via-white/12 to-transparent mb-10"></div>
+
+        <!-- Features -->
+        <div class="space-y-4 mb-10">
+          <div class="flex items-start gap-3.5">
+            <svg class="h-3.5 w-3.5 mt-[5px] text-white/45 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+            <span class="text-[14px] md:text-[15px] text-white/80 font-light leading-[1.55]">Pré-programmée avec votre fiche Google</span>
+          </div>
+          <div class="flex items-start gap-3.5">
+            <svg class="h-3.5 w-3.5 mt-[5px] text-white/45 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+            <span class="text-[14px] md:text-[15px] text-white/80 font-light leading-[1.55]">Durée de vie illimitée, reprogrammable</span>
+          </div>
+          <div class="flex items-start gap-3.5">
+            <svg class="h-3.5 w-3.5 mt-[5px] text-white/45 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+            <span class="text-[14px] md:text-[15px] text-white/80 font-light leading-[1.55]">Compatible 100% iPhone &amp; Android</span>
+          </div>
+          <div class="flex items-start gap-3.5">
+            <svg class="h-3.5 w-3.5 mt-[5px] text-white/45 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+            <span class="text-[14px] md:text-[15px] text-white/80 font-light leading-[1.55]">Conçue en Suisse · livraison 24h incluse</span>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <button class="cta-premium group w-full text-black rounded-full py-2 pl-2 pr-2 flex items-center gap-4">
+          <div class="flex-1 flex items-center justify-center gap-3 pl-[40px]">
+            <span class="text-[15px] font-medium">Commander</span>
+            <span class="text-black/40 text-[12px]">·</span>
+            <span class="text-[15px] font-medium">69 CHF</span>
+          </div>
+          <div class="h-10 w-10 rounded-full bg-black flex items-center justify-center flex-shrink-0 group-hover:translate-x-0.5 transition-transform duration-500">
+            <svg class="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+          </div>
+        </button>
+
+        <!-- Livraison -->
+        <div class="mt-5 flex items-center justify-center gap-2 text-white/55">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-[13px] font-light">Livraison 24h incluse</span>
+        </div>
+
+      </div>
+
+      <!-- Trust line -->
+      <div class="mt-10 flex items-center justify-center gap-x-4 gap-y-2 flex-wrap text-[10px] tracking-[0.2em] uppercase text-white/35 font-light reveal delay-d">
+        <span>Stripe</span>
+        <span class="text-white/15">·</span>
+        <span>TWINT</span>
+        <span class="text-white/15">·</span>
+        <span>Paiement sécurisé</span>
+        <span class="text-white/15">·</span>
+        <span>Fabrication suisse</span>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ============================================= -->
+<!-- SECTION 04 — QUESTIONS                         -->
+<!-- ============================================= -->
+<section class="relative bg-black text-white overflow-hidden">
+
+  <!-- Calm diffuse glow -->
+  <div class="absolute inset-0 section-calm pointer-events-none"></div>
+
+  <!-- Top fade -->
+  <div class="absolute inset-x-0 top-0 h-[300px] pointer-events-none"
+       style="background: linear-gradient(to bottom, rgba(0,5,20,0.5), transparent);"></div>
+
+  <div class="relative max-w-2xl mx-auto px-6 py-20 md:py-44">
+
+    <!-- Header -->
+    <div class="text-center mb-12 md:mb-24">
+
+      <!-- Chapter label -->
+      <div class="inline-flex items-center gap-4 mb-8 md:mb-12 reveal">
+        <div class="h-px w-10 bg-white/25"></div>
+        <span class="text-[11px] tracking-[0.35em] uppercase text-white/50 font-light">
+          04 · Questions
+        </span>
+        <div class="h-px w-10 bg-white/25"></div>
+      </div>
+
+      <!-- Headline -->
+      <h2 class="font-extralight text-white leading-[1.1] tracking-[-0.03em]
+                 text-[36px] sm:text-[44px] md:text-[52px]
+                 headline-glow reveal delay-a">
+        <span class="font-serif italic font-normal">À savoir.</span>
+      </h2>
+
+    </div>
+
+    <!-- FAQ list -->
+    <div class="divide-y divide-white/[0.08]">
+
+      <!-- Q.01 -->
+      <div class="py-10 md:py-12 reveal delay-b">
+        <div class="text-[10px] tracking-[0.3em] uppercase text-white/40 font-light mb-5">
+          Q.01
+        </div>
+        <h3 class="text-[22px] md:text-[26px] font-extralight text-white leading-[1.25] tracking-[-0.02em] mb-5">
+          Et l'installation ?
+        </h3>
+        <p class="text-[15px] md:text-[16px] text-white/65 leading-[1.7] font-light">
+          Vous la sortez de l'enveloppe. Vous la posez sur le comptoir. C'est fini. Elle arrive pré-programmée avec votre fiche Google.
+        </p>
+      </div>
+
+      <!-- Q.02 -->
+      <div class="py-10 md:py-12 reveal delay-b">
+        <div class="text-[10px] tracking-[0.3em] uppercase text-white/40 font-light mb-5">
+          Q.02
+        </div>
+        <h3 class="text-[22px] md:text-[26px] font-extralight text-white leading-[1.25] tracking-[-0.02em] mb-5">
+          Pourquoi pas un simple QR code imprimé ?
+        </h3>
+        <p class="text-[15px] md:text-[16px] text-white/65 leading-[1.7] font-light">
+          Parce que personne ne sort son appareil photo à la fin d'un repas. Un QR code impose 5 étapes. La plaque n'en impose qu'une&nbsp;: approcher le téléphone.
+        </p>
+      </div>
+
+      <!-- Q.03 -->
+      <div class="py-10 md:py-12 reveal delay-c">
+        <div class="text-[10px] tracking-[0.3em] uppercase text-white/40 font-light mb-5">
+          Q.03
+        </div>
+        <h3 class="text-[22px] md:text-[26px] font-extralight text-white leading-[1.25] tracking-[-0.02em] mb-5">
+          Ça marche sur quels téléphones ?
+        </h3>
+        <p class="text-[15px] md:text-[16px] text-white/65 leading-[1.7] font-light">
+          iPhone et Android. 97% des téléphones en Suisse sont compatibles NFC.
+        </p>
+      </div>
+
+      <!-- Q.04 -->
+      <div class="py-10 md:py-12 reveal delay-c">
+        <div class="text-[10px] tracking-[0.3em] uppercase text-white/40 font-light mb-5">
+          Q.04
+        </div>
+        <h3 class="text-[22px] md:text-[26px] font-extralight text-white leading-[1.25] tracking-[-0.02em] mb-5">
+          Google l'autorise ?
+        </h3>
+        <p class="text-[15px] md:text-[16px] text-white/65 leading-[1.7] font-light">
+          Oui. La plaque ouvre votre fiche Google. Vos clients écrivent ce qu'ils veulent. 100% conforme aux règles Google for Business.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ============================================= -->
+<!-- CTA FINAL                                      -->
+<!-- ============================================= -->
+<section class="relative bg-black text-white overflow-hidden">
+
+  <!-- Dramatic atmosphere -->
+  <div class="absolute inset-0 section-final pointer-events-none"></div>
+
+  <!-- Top fade -->
+  <div class="absolute inset-x-0 top-0 h-[300px] pointer-events-none"
+       style="background: linear-gradient(to bottom, rgba(0,5,20,0.5), transparent);"></div>
+
+  <div class="relative max-w-4xl mx-auto px-6 py-20 md:py-52 text-center">
+
+    <!-- Top marker -->
+    <div class="inline-flex items-center gap-4 mb-10 md:mb-16 reveal">
+      <div class="h-px w-10 bg-white/25"></div>
+      <span class="text-[11px] tracking-[0.35em] uppercase text-white/50 font-light">
+        Le choix
+      </span>
+      <div class="h-px w-10 bg-white/25"></div>
+    </div>
+
+    <!-- Negative block -->
+    <h2 class="font-extralight text-white/85 leading-[1.15] tracking-[-0.03em]
+               text-[24px] sm:text-[32px] md:text-[42px] lg:text-[48px]
+               max-w-3xl mx-auto reveal delay-a">
+      Dans un mois, vous aurez perdu<br class="hidden md:block">
+      trente jours de clients.
+    </h2>
+
+    <!-- Ou — the pivot -->
+    <div class="my-10 md:my-20 reveal delay-a">
+      <span class="font-serif italic text-[36px] md:text-[56px] font-normal text-white/45">Ou</span>
+    </div>
+
+    <!-- Positive block -->
+    <h2 class="font-extralight text-white leading-[1.15] tracking-[-0.03em]
+               text-[24px] sm:text-[32px] md:text-[42px] lg:text-[48px]
+               headline-glow max-w-3xl mx-auto reveal delay-b">
+      Vous aurez une fiche qui ne vous laisse plus dormir tranquille —
+      <span class="font-serif italic font-normal">parce qu'elle travaille pour vous.</span>
+    </h2>
+
+    <!-- CTA -->
+    <div class="mt-12 md:mt-20 reveal delay-c">
+      <button class="cta-premium group text-black pl-8 pr-2 py-2 rounded-full inline-flex items-center gap-3">
+        <span class="text-[15px] font-medium">Commander</span>
+        <span class="text-black/40 text-[12px]">·</span>
+        <span class="text-[15px] font-medium">69 CHF</span>
+        <div class="h-9 w-9 rounded-full bg-black flex items-center justify-center group-hover:translate-x-0.5 transition-transform duration-500">
+          <svg class="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
+        </div>
+      </button>
+    </div>
+
+    <!-- Anti-CTA trust line -->
+    <div class="mt-8 flex items-center justify-center gap-x-4 gap-y-2 flex-wrap text-[11px] tracking-[0.2em] uppercase text-white/40 font-light reveal delay-d">
+      <span>Livraison 24h</span>
+      <span class="text-white/15">·</span>
+      <span>TWINT</span>
+      <span class="text-white/15">·</span>
+      <span>Paiement sécurisé</span>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ============================================= -->
+<!-- FOOTER                                         -->
+<!-- ============================================= -->
+<footer class="relative bg-black border-t border-white/[0.08]">
+  <div class="max-w-6xl mx-auto px-6 md:px-12 py-10 flex flex-col md:flex-row items-center justify-between gap-5">
+
+    <!-- Left: brand -->
+    <div class="flex items-center gap-2.5 text-[12px] text-white/45 font-light">
+      <span class="font-medium text-white/75 tracking-tight">Swiss Arena</span>
+      <span class="text-white/20">·</span>
+      <span>Designed in Switzerland</span>
+    </div>
+
+    <!-- Right: links -->
+    <div class="flex items-center justify-center gap-x-4 gap-y-2 flex-wrap text-[12px] text-white/45 font-light">
+      <a href="#" class="hover:text-white/80 transition-colors duration-300">CGV</a>
+      <span class="text-white/20">·</span>
+      <a href="#" class="hover:text-white/80 transition-colors duration-300">Mentions légales</a>
+      <span class="text-white/20">·</span>
+      <a href="mailto:contact@swissarena.ch" class="hover:text-white/80 transition-colors duration-300">contact@swissarena.ch</a>
+    </div>
+
+  </div>
+</footer>
+
+<script>
+  // Scroll-triggered reveal orchestration
+  (function() {
+    const reveals = document.querySelectorAll('.reveal');
+    if (!reveals.length) return;
+
+    // Fallback for very old browsers
+    if (!('IntersectionObserver' in window)) {
+      reveals.forEach(el => el.classList.add('visible'));
+      return;
+    }
+
+    const io = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.15,
+      rootMargin: '0px 0px -80px 0px'
+    });
+
+    reveals.forEach(el => io.observe(el));
+  })();
+</script>
+
+</body>
+</html>
