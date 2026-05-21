@@ -113,7 +113,7 @@ function MiniCard({ order, h, extra }: { order: Order; h: TableHandlers; extra?:
       className="card-glass rounded-card p-4 cursor-pointer flex items-start justify-between gap-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(order.order_ref).then(() => toast('Référence copiée')) }}
+          <button onClick={(e) => { e.stopPropagation(); copyText(order.order_ref).then((ok) => { if (ok) toast('Référence copiée') }) }}
             className="font-mono text-[12px] text-white/60 hover:text-white">{order.order_ref}</button>
           <Badge className={order.payment_method === 'stripe' ? 'bg-blue-500/10 text-blue-300' : 'bg-violet-500/10 text-violet-300'}>
             {order.payment_method === 'stripe' ? 'Stripe' : 'Facture'}

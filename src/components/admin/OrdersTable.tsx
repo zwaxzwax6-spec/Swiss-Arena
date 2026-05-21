@@ -7,6 +7,7 @@ import { formatCHF, formatDateFr } from '../../lib/format'
 import type { AdminActionType } from '../../lib/orders'
 import type { Order, OrderStatus } from '../../lib/types'
 import { useToast } from '../ui/Toast'
+import { copyText } from '../../lib/clipboard'
 
 export interface TableHandlers {
   highlightId?: string | null
@@ -51,7 +52,7 @@ export default function OrdersTable(props: Props) {
 
   function copyRef(e: React.MouseEvent, ref: string) {
     e.stopPropagation()
-    navigator.clipboard.writeText(ref).then(() => toast('Référence copiée'))
+    copyText(ref).then((ok) => { if (ok) toast('Référence copiée') })
   }
 
   if (orders.length === 0) {

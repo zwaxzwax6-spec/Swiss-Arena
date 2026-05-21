@@ -9,8 +9,6 @@ function assertNever(x: never): never {
 const TERMINAL: OrderStatus[] = ['completed', 'recovery']
 export const isPaid = (o: Order) => o.status === 'paid' || o.status === 'completed'
 export const needsAction = (o: Order) => !TERMINAL.includes(o.status)
-export const canGenerateInvoice = (o: Order) =>
-  o.payment_method === 'invoice_30d' && o.status === 'confirmed'
 export const canEscalate = (o: Order) =>
   o.status === 'awaiting_payment' || o.status === 'overdue'
 

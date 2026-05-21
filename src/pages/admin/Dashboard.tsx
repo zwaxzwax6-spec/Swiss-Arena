@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogOut } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
@@ -107,9 +107,12 @@ export default function Dashboard() {
     }
   }
 
-  function saveNotes(id: string, notes: string) {
-    update(id, { notes }).catch(() => toast('Erreur sauvegarde note'))
-  }
+  const saveNotes = useCallback(
+    (id: string, notes: string) => {
+      update(id, { notes }).catch(() => toast('Erreur sauvegarde note'))
+    },
+    [update, toast],
+  )
 
   const filtered = useMemo(() => {
     let list = orders

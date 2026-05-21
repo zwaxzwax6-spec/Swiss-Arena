@@ -2,10 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { X, Copy, ExternalLink, Download } from 'lucide-react'
 import StatusBadge from './StatusBadge'
 import PrimaryActionButton from './PrimaryActionButton'
-import { formatCHF, formatDateFr, formatDateTimeFr, formatAddressOneLine } from '../../lib/format'
+import { formatCHF, formatDateFr, formatDateTimeFr, formatAddressOneLine, daysUntil } from '../../lib/format'
 import { echeanceInfo, type AdminActionType } from '../../lib/orders'
 import { copyText } from '../../lib/clipboard'
-import { daysUntil } from '../../lib/format'
 import { PAYMENT_LABELS, PRODUCT_NAME, type Order } from '../../lib/types'
 import { useToast } from '../ui/Toast'
 
@@ -63,7 +62,7 @@ export default function OrderDetail({ order, onClose, onSaveNotes, onAction, onD
   const firstRender = useRef(true)
   const { toast } = useToast()
 
-  useEffect(() => { setNotes(order.notes ?? ''); firstRender.current = true }, [order.id, order.notes])
+  useEffect(() => { setNotes(order.notes ?? ''); firstRender.current = true }, [order.id])
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -72,9 +71,11 @@ export default function OrderDetail({ order, onClose, onSaveNotes, onAction, onD
   useEffect(() => {
     if (firstRender.current) { firstRender.current = false; return }
     window.clearTimeout(timer.current)
-    timer.current = window.setTimeout(() => onSaveNotes(order.id, notes), 500)
+    timer.current = window.setTimeout(() => {
+      if (notes !== (order.notes ?? '')) onSaveNotes(order.id, notes)
+    }, 500)
     return () => window.clearTimeout(timer.current)
-  }, [notes, order.id, onSaveNotes])
+  }, [notes, order.id, order.notes, onSaveNotes])
 
   const timeline = buildTimeline(order)
   const ech = echeanceInfo(order)
@@ -147,7 +148,7 @@ export default function OrderDetail({ order, onClose, onSaveNotes, onAction, onD
               {timeline.map((e, i) => {
                 const done = !!e.date
                 return (
-                  <div key={i} className="relative pb-5 last:pb-0">
+                  <div key={e.label} className="relative pb-5 last:pb-0">
                     <span className={`absolute -left-5 top-1 h-2 w-2 rounded-full ${done ? e.dot : 'bg-white/15'}`} />
                     {i < timeline.length - 1 && (
                       <span className={`absolute -left-[15px] top-3 h-full w-px ${done ? 'bg-white/15' : 'bg-white/[0.06] border-l border-dashed border-white/15'}`} />
