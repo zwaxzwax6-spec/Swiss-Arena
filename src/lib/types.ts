@@ -1,11 +1,14 @@
 export type OrderStatus =
-  | 'pending'
-  | 'paid_stripe'
+  | 'new'
+  | 'confirmed'
   | 'invoiced'
-  | 'paid_invoice'
+  | 'paid'
+  | 'configured'
   | 'shipped'
+  | 'awaiting_payment'
   | 'overdue'
   | 'recovery'
+  | 'completed'
 
 export type PaymentMethod = 'stripe' | 'invoice_30d'
 
@@ -24,6 +27,7 @@ export interface Order {
   postal_code: string
   city: string
   canton: string
+  google_business_url: string
 
   product: string
   quantity: number
@@ -34,6 +38,12 @@ export interface Order {
   invoice_pdf_url: string | null
   invoice_due_date: string | null
   invoice_paid_at: string | null
+
+  relance_count: number
+  last_relance_at: string | null
+  confirmed_at: string | null
+  invoiced_at: string | null
+  configured_at: string | null
 
   shipped_at: string | null
   tracking_number: string | null
@@ -56,8 +66,8 @@ export interface NewOrder {
   postal_code: string
   city: string
   canton: string
+  google_business_url: string
   amount_chf: number
-  invoice_due_date: string | null
 }
 
 export const PRODUCT_NAME = 'Plaque NFC Swiss Arena'
@@ -71,22 +81,28 @@ export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
 }
 
 export const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: 'En attente',
-  paid_stripe: 'Payé',
-  invoiced: 'Facturé',
-  paid_invoice: 'Payé',
-  shipped: 'Expédié',
+  new: 'Nouvelle',
+  confirmed: 'Confirmée',
+  invoiced: 'Facturée',
+  paid: 'Payée',
+  configured: 'Configurée',
+  shipped: 'Expédiée',
+  awaiting_payment: 'En attente paiement',
   overdue: 'En retard',
   recovery: 'Recouvrement',
+  completed: 'Terminée',
 }
 
 /** Tailwind classes for each status badge. */
 export const STATUS_BADGE: Record<OrderStatus, string> = {
-  pending: 'bg-white/10 text-white/60',
-  paid_stripe: 'bg-emerald-500/15 text-emerald-400',
-  invoiced: 'bg-blue-500/15 text-blue-400',
-  paid_invoice: 'bg-emerald-500/15 text-emerald-400',
+  new: 'bg-yellow-500/15 text-yellow-400',
+  confirmed: 'bg-blue-500/15 text-blue-400',
+  invoiced: 'bg-indigo-500/15 text-indigo-400',
+  paid: 'bg-emerald-500/15 text-emerald-400',
+  configured: 'bg-cyan-500/15 text-cyan-400',
   shipped: 'bg-violet-500/15 text-violet-400',
+  awaiting_payment: 'bg-orange-500/15 text-orange-400',
   overdue: 'bg-red-500/15 text-red-400',
   recovery: 'bg-red-500/25 text-red-300',
+  completed: 'bg-white/10 text-white/50',
 }

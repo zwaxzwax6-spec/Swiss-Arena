@@ -3,8 +3,8 @@ import { formatDateShort } from './format'
 
 const HEADERS = [
   'Réf', 'Statut', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Entreprise',
-  'Adresse', 'NPA', 'Ville', 'Canton', 'Montant', 'Méthode',
-  'Date création', 'Date échéance', 'Date paiement', 'Date expédition',
+  'Adresse', 'NPA', 'Ville', 'Canton', 'Fiche Google', 'Montant', 'Méthode',
+  'Date création', 'Date échéance', 'Date paiement', 'Date expédition', 'Relances',
 ]
 
 function escapeCell(value: string): string {
@@ -26,12 +26,14 @@ export function ordersToCsv(orders: Order[]): string {
       o.postal_code,
       o.city,
       o.canton,
+      o.google_business_url,
       Number(o.amount_chf).toFixed(2),
       PAYMENT_LABELS[o.payment_method],
       formatDateShort(o.created_at),
       formatDateShort(o.invoice_due_date),
       formatDateShort(o.invoice_paid_at),
       formatDateShort(o.shipped_at),
+      String(o.relance_count),
     ]
       .map((c) => escapeCell(String(c)))
       .join(';'),
