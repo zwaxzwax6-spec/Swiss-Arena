@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import GlassCard from '../ui/GlassCard'
-import { isPaid, isSameMonth } from '../../lib/orders'
+import { statKpis } from '../../lib/orders'
 import { formatCHF, monthNameFr } from '../../lib/format'
 import type { Order } from '../../lib/types'
 
@@ -34,30 +34,18 @@ function Stat({
 }
 
 export default function StatsRow({ orders }: { orders: Order[] }) {
-  const { monthName, ca, monthCount, pending, unpaid } = useMemo(() => {
+  const { monthName, ca, monthCount, todo, unpaid } = useMemo(() => {
     const now = new Date()
-    const ca = orders
-      .filter((o) => isPaid(o) && isSameMonth(o.created_at, now))
-      .reduce((sum, o) => sum + Number(o.amount_chf), 0)
-    const monthCount = orders.filter((o) => isSameMonth(o.created_at, now)).length
-    const pending = orders.filter((o) => o.status === 'invoiced').length
-    const unpaid = orders
-      .filter((o) => o.status === 'invoiced' || o.status === 'overdue')
-      .reduce((sum, o) => sum + Number(o.amount_chf), 0)
-    return { monthName: monthNameFr(now), ca, monthCount, pending, unpaid }
+    const k = statKpis(orders, now)
+    return { monthName: monthNameFr(now), ...k }
   }, [orders])
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <Stat label={`CA · ${monthName}`} value={formatCHF(ca)} unit="CHF" />
       <Stat label="Commandes" value={String(monthCount)} />
-      <Stat label="En attente" value={String(pending)} badge={pending > 0 ? 'orange' : undefined} />
-      <Stat
-        label="Impayé"
-        value={formatCHF(unpaid)}
-        unit="CHF"
-        badge={unpaid > 0 ? 'red' : undefined}
-      />
+      <Stat label="À traiter" value={String(todo)} badge={todo > 0 ? 'orange' : undefined} />
+      <Stat label="Impayé" value={formatCHF(unpaid)} unit="CHF" badge={unpaid > 0 ? 'red' : undefined} />
     </div>
   )
 }
