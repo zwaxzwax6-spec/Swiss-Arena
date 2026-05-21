@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/commander", "destination": "/app.html" },
+    { "source": "/confirmation", "destination": "/app.html" },
+    { "source": "/confirmation/:path*", "destination": "/app.html" },
+    { "source": "/admin", "destination": "/app.html" },
+    { "source": "/admin/:path*", "destination": "/app.html" }
+  ]
+}
