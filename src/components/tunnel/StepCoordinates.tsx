@@ -102,17 +102,17 @@ export default function StepCoordinates({ form, errors, onChange, onContinue }: 
 
         <div className="mb-4">
           <Input
-            label="Lien de votre fiche Google"
+            label="Lien de votre fiche Google *"
             name="googleBusinessUrl"
             type="url"
             inputMode="url"
-            placeholder="https://g.page/votre-etablissement ou recherchez votre établissement sur Google Maps"
+            placeholder="https://g.page/votre-etablissement"
             value={form.googleBusinessUrl}
             error={errors.googleBusinessUrl}
             onChange={(e) => onChange('googleBusinessUrl', e.target.value)}
           />
           <span className="mt-1.5 block text-[12px] text-white/35 font-light">
-            Trouvez votre fiche en cherchant votre établissement sur Google Maps, puis copiez le lien de partage
+            Cherchez votre établissement sur Google Maps, puis copiez le lien de partage
           </span>
         </div>
 
