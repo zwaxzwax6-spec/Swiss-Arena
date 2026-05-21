@@ -11,7 +11,6 @@ import { EMPTY_FORM, type FormErrors, type OrderForm, type TunnelStep } from '..
 import { validateForm } from '../components/tunnel/validate'
 import { supabase } from '../lib/supabase'
 import { PRODUCT_PRICE, STRIPE_PAYMENT_LINK, type NewOrder, type PaymentMethod } from '../lib/types'
-import { addDays } from '../lib/format'
 import { useToast } from '../components/ui/Toast'
 
 export default function Commander() {
@@ -52,7 +51,7 @@ export default function Commander() {
 
     const isInvoice = payment === 'invoice_30d'
     const payload: NewOrder = {
-      status: isInvoice ? 'invoiced' : 'pending',
+      status: 'new',
       payment_method: payment,
       first_name: form.firstName.trim(),
       last_name: form.lastName.trim(),
@@ -63,8 +62,8 @@ export default function Commander() {
       postal_code: form.postalCode.trim(),
       city: form.city.trim(),
       canton: form.canton,
+      google_business_url: form.googleBusinessUrl.trim(),
       amount_chf: PRODUCT_PRICE,
-      invoice_due_date: isInvoice ? addDays(new Date(), 30).toISOString() : null,
     }
 
     const insertData = isInvoice ? payload : { ...payload, stripe_payment_link_used: true }

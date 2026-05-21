@@ -6,6 +6,7 @@ export interface OrderForm {
   email: string
   phone: string
   companyName: string
+  googleBusinessUrl: string
   address: string
   postalCode: string
   city: string
@@ -20,6 +21,7 @@ export const EMPTY_FORM: OrderForm = {
   email: '',
   phone: '',
   companyName: '',
+  googleBusinessUrl: '',
   address: '',
   postalCode: '',
   city: '',
