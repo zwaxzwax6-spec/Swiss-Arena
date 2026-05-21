@@ -1,12 +1,16 @@
 import type { Order, OrderStatus } from './types'
 import { daysUntil } from './format'
 
+function assertNever(x: never): never {
+  throw new Error(`Unhandled order status: ${x}`)
+}
+
 // ─── Predicates ──────────────────────────────────────────────────────────────
 const TERMINAL: OrderStatus[] = ['completed', 'recovery']
 export const isPaid = (o: Order) => o.status === 'paid' || o.status === 'completed'
 export const needsAction = (o: Order) => !TERMINAL.includes(o.status)
 export const canGenerateInvoice = (o: Order) =>
-  o.payment_method === 'invoice_30d' && o.status !== 'new'
+  o.payment_method === 'invoice_30d' && o.status === 'confirmed'
 export const canEscalate = (o: Order) =>
   o.status === 'awaiting_payment' || o.status === 'overdue'
 
@@ -29,7 +33,8 @@ export interface ActionDescriptor {
   className: string
 }
 
-const STYLE: Record<string, string> = {
+type StyleKey = 'emerald' | 'blue' | 'indigo' | 'cyan' | 'violet' | 'gray' | 'red'
+const STYLE: Record<StyleKey, string> = {
   emerald: 'bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 border border-emerald-500/25',
   blue: 'bg-blue-500/15 text-blue-300 hover:bg-blue-500/25 border border-blue-500/25',
   indigo: 'bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 border border-indigo-500/25',
@@ -64,8 +69,11 @@ export function nextAction(o: Order): ActionDescriptor | null {
       return { type: 'pay', label: '✓ Payée', className: STYLE.emerald }
     case 'overdue':
       return { type: 'relance', label: 'Relancer', className: STYLE.red }
-    default:
+    case 'completed':
+    case 'recovery':
       return null
+    default:
+      return assertNever(o.status)
   }
 }
 
@@ -139,6 +147,7 @@ export function echeanceInfo(order: Order): EcheanceInfo {
 }
 
 // ─── Stats ───────────────────────────────────────────────────────────────────
+// Local-time month bucketing is intentional: the admin reasons about CA in local (Swiss) calendar months.
 export function isSameMonth(iso: string, ref: Date): boolean {
   const d = new Date(iso)
   return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth()
@@ -152,6 +161,7 @@ export interface StatKpis {
 }
 
 export function statKpis(orders: Order[], ref: Date): StatKpis {
+  // CA bucketed by order creation month (not payment date) — volume proxy for a single-SKU product.
   const ca = orders
     .filter((o) => isPaid(o) && isSameMonth(o.created_at, ref))
     .reduce((s, o) => s + Number(o.amount_chf), 0)

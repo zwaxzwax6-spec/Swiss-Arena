@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextAction, applyAction, needsAction, isPaid, statKpis } from './orders'
+import { nextAction, applyAction, needsAction, isPaid, statKpis, echeanceInfo } from './orders'
 import type { Order } from './types'
 
 function makeOrder(over: Partial<Order>): Order {
@@ -92,6 +92,31 @@ describe('applyAction', () => {
   })
   it('escalate → recovery', () => {
     expect(applyAction('escalate', makeOrder({ status: 'overdue' }), { now })).toEqual({ status: 'recovery' })
+  })
+})
+
+describe('echeanceInfo', () => {
+  const future = (days: number) => new Date(Date.now() + days * 86400000).toISOString()
+  it('stripe orders show no échéance', () => {
+    expect(echeanceInfo(makeOrder({ payment_method: 'stripe', status: 'paid' })).label).toBe('—')
+  })
+  it('paid invoice shows Réglé', () => {
+    expect(echeanceInfo(makeOrder({ payment_method: 'invoice_30d', status: 'paid' })).label).toBe('Réglé ✓')
+  })
+  it('past-due invoiced order shows ÉCHU and pulses', () => {
+    const e = echeanceInfo(makeOrder({ payment_method: 'invoice_30d', status: 'awaiting_payment', invoice_due_date: future(-1) }))
+    expect(e.label).toBe('ÉCHU')
+    expect(e.pulse).toBe(true)
+  })
+  it('imminent due date (<=2d) is red and pulses', () => {
+    const e = echeanceInfo(makeOrder({ payment_method: 'invoice_30d', status: 'awaiting_payment', invoice_due_date: future(1) }))
+    expect(e.label).toBe('J-1')
+    expect(e.pulse).toBe(true)
+  })
+  it('comfortable due date (>15d) is not pulsing', () => {
+    const e = echeanceInfo(makeOrder({ payment_method: 'invoice_30d', status: 'invoiced', invoice_due_date: future(25) }))
+    expect(e.label).toBe('J-25')
+    expect(e.pulse).toBeUndefined()
   })
 })
 
