@@ -7,9 +7,7 @@ export type StatusFilter = OrderStatus | 'all'
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Tous les statuts' },
-  ...(Object.keys(STATUS_LABELS) as OrderStatus[])
-    // dedupe duplicate labels (paid_stripe / paid_invoice both "Payé") by keeping both values
-    .map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+  ...(Object.keys(STATUS_LABELS) as OrderStatus[]).map((s) => ({ value: s, label: STATUS_LABELS[s] })),
 ]
 
 const SORT_OPTIONS = [
