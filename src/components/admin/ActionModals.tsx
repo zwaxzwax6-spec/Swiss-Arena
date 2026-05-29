@@ -133,11 +133,15 @@ export default function ActionModals({ action, busy, onClose, onConfirm }: Props
   }
 
   if (type === 'pay') {
+    // Stripe orders already got an automatic "paiement reçu" confirmation on
+    // checkout, so the manual email is redundant there — only show it for
+    // Facture 30j (where the admin confirms an out-of-band bank transfer).
+    const showEmail = order.payment_method === 'invoice_30d'
     return (
       <Modal open onClose={onClose} title={`Confirmer la réception du paiement de ${formatCHF(order.amount_chf)} CHF ?`}
         footer={<>{cancel}<Button variant="ghost" loading={busy} onClick={() => onConfirm(action)}
           className="!bg-emerald-500/15 !text-emerald-300 !border-emerald-500/25 hover:!bg-emerald-500/25">Confirmer</Button></>}>
-        <EmailBlock order={order} email={emailForAction('pay', order)!} />
+        {showEmail && <EmailBlock order={order} email={emailForAction('pay', order)!} />}
         <Recap order={order} />
       </Modal>
     )
