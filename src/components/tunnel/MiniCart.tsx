@@ -33,7 +33,7 @@ function PriceTag() {
         {PRODUCT_PRICE_OLD} CHF
       </span>
       <span className="text-[10px] tracking-[0.15em] uppercase text-white/55 border border-white/15 rounded-full px-1.5 py-0.5">
-        −42%
+        −34%
       </span>
     </div>
   )

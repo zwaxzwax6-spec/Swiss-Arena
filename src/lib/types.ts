@@ -71,12 +71,11 @@ export interface NewOrder {
   postal_code: string
   city: string
   canton: string
-  google_business_url: string
   amount_chf: number
 }
 
 export const PRODUCT_NAME = 'Plaque NFC Swiss Arena'
-export const PRODUCT_PRICE = 69
+export const PRODUCT_PRICE = 79
 export const PRODUCT_PRICE_OLD = 119
 export const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/bJefZjb5qbUf0YH8rO4Ni01'
 

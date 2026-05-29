@@ -33,15 +33,16 @@ export default function TodoSections(props: Props) {
     const by = (f: (o: Order) => boolean) =>
       orders.filter(f).sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
 
-    const googleLink = (o: Order) => (
-      <div className="flex items-center gap-2 mt-1">
-        <a href={o.google_business_url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
-          className="inline-flex items-center gap-1 text-[12px] text-blue-300 underline underline-offset-2 break-all">
-          <ExternalLink className="h-3 w-3 shrink-0" />{o.google_business_url || '—'}
-        </a>
-        <CopyBtn text={o.google_business_url} label="Lien copié ✓" toast={toast} />
-      </div>
-    )
+    const googleLink = (o: Order) =>
+      o.google_business_url ? (
+        <div className="flex items-center gap-2 mt-1">
+          <a href={o.google_business_url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-[12px] text-blue-300 underline underline-offset-2 break-all">
+            <ExternalLink className="h-3 w-3 shrink-0" />{o.google_business_url}
+          </a>
+          <CopyBtn text={o.google_business_url} label="Lien copié ✓" toast={toast} />
+        </div>
+      ) : null
     const address = (o: Order) => (
       <div className="flex items-center gap-2 mt-1">
         <span className="text-[12px] text-white/55">{formatAddressOneLine(o)}</span>

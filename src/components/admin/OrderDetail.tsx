@@ -122,16 +122,18 @@ export default function OrderDetail({ order, onClose, onSaveNotes, onAction, onD
             <CopyRow label="Canton" value={order.canton} />
           </Section>
 
-          <Section title="Fiche Google">
-            <div className="flex items-center gap-2">
-              <a href={order.google_business_url} target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-[13px] text-blue-300 underline underline-offset-2 break-all">
-                <ExternalLink className="h-3.5 w-3.5 shrink-0" />{order.google_business_url || '—'}
-              </a>
-              <button onClick={async () => { if (await copyText(order.google_business_url)) toast('Lien copié ✓') }}
-                className="text-white/35 hover:text-white shrink-0"><Copy className="h-3.5 w-3.5" /></button>
-            </div>
-          </Section>
+          {order.google_business_url && (
+            <Section title="Fiche Google">
+              <div className="flex items-center gap-2">
+                <a href={order.google_business_url} target="_blank" rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[13px] text-blue-300 underline underline-offset-2 break-all">
+                  <ExternalLink className="h-3.5 w-3.5 shrink-0" />{order.google_business_url}
+                </a>
+                <button onClick={async () => { if (await copyText(order.google_business_url)) toast('Lien copié ✓') }}
+                  className="text-white/35 hover:text-white shrink-0"><Copy className="h-3.5 w-3.5" /></button>
+              </div>
+            </Section>
+          )}
 
           <Section title="Commande">
             <CopyRow label="Produit" value={`1× ${PRODUCT_NAME}`} />

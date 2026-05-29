@@ -152,10 +152,14 @@ export default function ActionModals({ action, busy, onClose, onConfirm }: Props
       <Modal open onClose={onClose} title="La plaque a été programmée avec le lien Google ?"
         footer={<>{cancel}<Button variant="ghost" loading={busy} onClick={() => onConfirm(action)}
           className="!bg-cyan-500/15 !text-cyan-300 !border-cyan-500/25 hover:!bg-cyan-500/25">Oui, c'est configuré</Button></>}>
-        <a href={order.google_business_url} target="_blank" rel="noreferrer"
-          className="block my-4 break-all text-[13px] text-blue-300 underline underline-offset-2">
-          {order.google_business_url || '—'}
-        </a>
+        {order.google_business_url ? (
+          <a href={order.google_business_url} target="_blank" rel="noreferrer"
+            className="block my-4 break-all text-[13px] text-blue-300 underline underline-offset-2">
+            {order.google_business_url}
+          </a>
+        ) : (
+          <p className="my-4 text-[13px] text-white/55">Aucun lien Google enregistré pour cette commande.</p>
+        )}
       </Modal>
     )
   }

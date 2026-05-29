@@ -62,7 +62,6 @@ export default function Commander() {
       postal_code: form.postalCode.trim(),
       city: form.city.trim(),
       canton: form.canton,
-      google_business_url: form.googleBusinessUrl.trim(),
       amount_chf: PRODUCT_PRICE,
     }
 

@@ -18,10 +18,6 @@ export function validateForm(form: OrderForm): FormErrors {
   else if (!PHONE_RE.test(form.phone.trim()) || phoneDigits.replace(/\D/g, '').length < 10)
     e.phone = 'Numéro invalide (0... ou +41...)'
 
-  if (!form.googleBusinessUrl.trim()) e.googleBusinessUrl = 'Lien Google requis'
-  else if (!/^https?:\/\//i.test(form.googleBusinessUrl.trim()))
-    e.googleBusinessUrl = 'Le lien doit commencer par http:// ou https://'
-
   if (!form.address.trim()) e.address = 'Adresse requise'
 
   if (!form.postalCode.trim()) e.postalCode = 'NPA requis'
