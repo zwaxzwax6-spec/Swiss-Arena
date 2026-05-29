@@ -12,6 +12,7 @@ function makeOrder(over: Partial<Order>): Order {
     invoice_pdf_url: null, invoice_due_date: null, invoice_paid_at: null,
     relance_count: 0, last_relance_at: null, confirmed_at: null, invoiced_at: null,
     configured_at: null, shipped_at: null, tracking_number: null, notes: null,
+    confirmation_email_sent: false, confirmation_email_error: null,
     created_at: '2026-05-21T12:00:00Z', updated_at: '2026-05-21T12:00:00Z',
     ...over,
   }

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { X, Copy, ExternalLink, Download } from 'lucide-react'
+import { X, Copy, ExternalLink, Download, AlertTriangle } from 'lucide-react'
 import StatusBadge from './StatusBadge'
 import PrimaryActionButton from './PrimaryActionButton'
 import { formatCHF, formatDateFr, formatDateTimeFr, formatAddressOneLine, daysUntil } from '../../lib/format'
 import { echeanceInfo, type AdminActionType } from '../../lib/orders'
+import { confirmationEmail, fullEmailText } from '../../lib/email-templates'
 import { copyText } from '../../lib/clipboard'
 import { PAYMENT_LABELS, PRODUCT_NAME, type Order } from '../../lib/types'
 import { useToast } from '../ui/Toast'
@@ -96,6 +97,22 @@ export default function OrderDetail({ order, onClose, onSaveNotes, onAction, onD
         </div>
 
         <div className="px-6 py-6">
+          {!order.confirmation_email_sent && (
+            <div className="mb-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 px-4 py-3">
+              <div className="flex items-start gap-2 text-[13px] text-amber-200/90">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                <div>
+                  Email de confirmation non envoyé{order.confirmation_email_error ? ` — ${order.confirmation_email_error}` : ''}.
+                  <button
+                    onClick={async () => { if (await copyText(fullEmailText(confirmationEmail(order)))) toast('Contenu de l\'email copié ✓') }}
+                    className="block mt-2 rounded-full py-1.5 px-3 text-[12px] font-light bg-amber-500/15 text-amber-200 border border-amber-500/25 hover:bg-amber-500/25 transition-colors">
+                    Copier le contenu de l'email
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Section title="Client">
             <div className="text-[16px] text-white/90 mb-2">{order.first_name} {order.last_name}</div>
             <CopyRow label="Email" value={order.email} copy={order.email} />
@@ -173,8 +190,8 @@ export default function OrderDetail({ order, onClose, onSaveNotes, onAction, onD
           <Section title="Actions">
             <PrimaryActionButton order={order} size="lg" onAction={onAction} />
             <div className="flex flex-wrap gap-2 mt-3">
-              <SecBtn label="Copier email" onClick={async () => { if (await copyText(order.email)) toast('Email copié ✓') }} />
-              <SecBtn label="Copier adresse" onClick={async () => { if (await copyText(formatAddressOneLine(order))) toast('Adresse copiée ✓') }} />
+              <SecBtn label="Copier l'adresse email" onClick={async () => { if (await copyText(order.email)) toast('Adresse email copiée ✓') }} />
+              <SecBtn label="Copier l'adresse postale" onClick={async () => { if (await copyText(formatAddressOneLine(order))) toast('Adresse postale copiée ✓') }} />
               {order.invoice_pdf_url && <SecBtn label="Télécharger facture" onClick={() => onDownloadInvoice(order)} />}
             </div>
           </Section>
