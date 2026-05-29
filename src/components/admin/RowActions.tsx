@@ -55,10 +55,10 @@ export default function RowActions({ order, onOpenDetail, onDownloadInvoice, onE
           onClick={(e) => e.stopPropagation()}
         >
           <MenuItem icon={<Eye className="h-3.5 w-3.5" />} label="Voir détail" onClick={() => { close(); onOpenDetail(order) }} />
-          <MenuItem icon={<Mail className="h-3.5 w-3.5" />} label="Copier email"
-            onClick={async () => { close(); if (await copyText(order.email)) toast('Email copié ✓') }} />
-          <MenuItem icon={<MapPin className="h-3.5 w-3.5" />} label="Copier adresse"
-            onClick={async () => { close(); if (await copyText(formatAddressOneLine(order))) toast('Adresse copiée ✓') }} />
+          <MenuItem icon={<Mail className="h-3.5 w-3.5" />} label="Copier l'adresse email"
+            onClick={async () => { close(); if (await copyText(order.email)) toast('Adresse email copiée ✓') }} />
+          <MenuItem icon={<MapPin className="h-3.5 w-3.5" />} label="Copier l'adresse postale"
+            onClick={async () => { close(); if (await copyText(formatAddressOneLine(order))) toast('Adresse postale copiée ✓') }} />
           {order.invoice_pdf_url && (
             <MenuItem icon={<Download className="h-3.5 w-3.5" />} label="Télécharger facture"
               onClick={() => { close(); onDownloadInvoice(order) }} />

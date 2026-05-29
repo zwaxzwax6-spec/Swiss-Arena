@@ -19,26 +19,14 @@ function makeOrder(over: Partial<Order>): Order {
 }
 
 describe('nextAction', () => {
-  it('new + stripe → pay', () => {
-    expect(nextAction(makeOrder({ status: 'new', payment_method: 'stripe' }))?.type).toBe('pay')
+  it('new + stripe → configure (Stripe is already paid)', () => {
+    expect(nextAction(makeOrder({ status: 'new', payment_method: 'stripe' }))?.type).toBe('configure')
   })
-  it('new + invoice → confirm', () => {
-    expect(nextAction(makeOrder({ status: 'new', payment_method: 'invoice_30d' }))?.type).toBe('confirm')
-  })
-  it('confirmed without PDF → generate_invoice', () => {
-    expect(nextAction(makeOrder({ status: 'confirmed', payment_method: 'invoice_30d' }))?.type).toBe('generate_invoice')
-  })
-  it('confirmed with PDF → mark_invoiced', () => {
-    expect(nextAction(makeOrder({ status: 'confirmed', payment_method: 'invoice_30d', invoice_pdf_url: 'x.pdf' }))?.type).toBe('mark_invoiced')
+  it('new + invoice → mark_invoiced (générer la facture)', () => {
+    expect(nextAction(makeOrder({ status: 'new', payment_method: 'invoice_30d' }))?.type).toBe('mark_invoiced')
   })
   it('invoiced → configure', () => {
     expect(nextAction(makeOrder({ status: 'invoiced', payment_method: 'invoice_30d' }))?.type).toBe('configure')
-  })
-  it('paid + not shipped (stripe) → configure', () => {
-    expect(nextAction(makeOrder({ status: 'paid', payment_method: 'stripe' }))?.type).toBe('configure')
-  })
-  it('paid + shipped (invoice) → complete', () => {
-    expect(nextAction(makeOrder({ status: 'paid', payment_method: 'invoice_30d', shipped_at: '2026-05-22T00:00:00Z' }))?.type).toBe('complete')
   })
   it('configured → ship', () => {
     expect(nextAction(makeOrder({ status: 'configured' }))?.type).toBe('ship')
@@ -48,6 +36,9 @@ describe('nextAction', () => {
   })
   it('awaiting_payment → pay', () => {
     expect(nextAction(makeOrder({ status: 'awaiting_payment', payment_method: 'invoice_30d' }))?.type).toBe('pay')
+  })
+  it('paid → null (no further required action)', () => {
+    expect(nextAction(makeOrder({ status: 'paid', payment_method: 'invoice_30d' }))).toBeNull()
   })
   it('overdue → relance', () => {
     expect(nextAction(makeOrder({ status: 'overdue', payment_method: 'invoice_30d' }))?.type).toBe('relance')
@@ -62,9 +53,6 @@ describe('nextAction', () => {
 
 describe('applyAction', () => {
   const now = '2026-05-21T12:00:00.000Z'
-  it('confirm sets confirmed_at + status', () => {
-    expect(applyAction('confirm', makeOrder({}), { now })).toEqual({ status: 'confirmed', confirmed_at: now })
-  })
   it('mark_invoiced sets invoiced_at + due date +30d', () => {
     const p = applyAction('mark_invoiced', makeOrder({}), { now })
     expect(p.status).toBe('invoiced')

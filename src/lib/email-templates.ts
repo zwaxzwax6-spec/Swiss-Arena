@@ -128,8 +128,6 @@ export function fullEmailText({ subject, body }: EmailContent): string {
 /** Maps an admin action to its email template, or null for non-emailing actions. */
 export function emailForAction(type: AdminActionType, o: Order): EmailContent | null {
   switch (type) {
-    case 'confirm':
-      return confirmationEmail(o)
     case 'mark_invoiced':
       return invoiceEmail(o)
     case 'pay':

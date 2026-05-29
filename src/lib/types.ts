@@ -1,6 +1,5 @@
 export type OrderStatus =
   | 'new'
-  | 'confirmed'
   | 'invoiced'
   | 'paid'
   | 'configured'
@@ -86,7 +85,6 @@ export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
 
 export const STATUS_LABELS: Record<OrderStatus, string> = {
   new: 'Nouvelle',
-  confirmed: 'Confirmée',
   invoiced: 'Facturée',
   paid: 'Payée',
   configured: 'Configurée',
@@ -100,7 +98,6 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
 /** Tailwind classes for each status badge. */
 export const STATUS_BADGE: Record<OrderStatus, string> = {
   new: 'bg-yellow-500/15 text-yellow-400',
-  confirmed: 'bg-blue-500/15 text-blue-400',
   invoiced: 'bg-indigo-500/15 text-indigo-400',
   paid: 'bg-emerald-500/15 text-emerald-400',
   configured: 'bg-cyan-500/15 text-cyan-400',

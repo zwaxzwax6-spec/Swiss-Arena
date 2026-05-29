@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { X, Copy, ExternalLink, Download, AlertTriangle } from 'lucide-react'
+import { X, Copy, ExternalLink, Download } from 'lucide-react'
 import StatusBadge from './StatusBadge'
 import PrimaryActionButton from './PrimaryActionButton'
 import { formatCHF, formatDateFr, formatDateTimeFr, formatAddressOneLine, daysUntil } from '../../lib/format'
-import { echeanceInfo, type AdminActionType } from '../../lib/orders'
-import { confirmationEmail, fullEmailText } from '../../lib/email-templates'
+import { echeanceInfo, nextAction, type AdminActionType } from '../../lib/orders'
 import { copyText } from '../../lib/clipboard'
 import { PAYMENT_LABELS, PRODUCT_NAME, type Order } from '../../lib/types'
 import { useToast } from '../ui/Toast'
@@ -42,17 +41,24 @@ function CopyRow({ label, value, copy }: { label: string; value: React.ReactNode
   )
 }
 
-interface TLEvent { label: string; date: string | null; dot: string }
+interface TLEvent { label: string; date: string | null; dot: string; note?: string }
 
+/** Informative history (no actions). Confirmation email is auto, shown for both methods. */
 function buildTimeline(o: Order): TLEvent[] {
   const ev: TLEvent[] = [{ label: 'Commande reçue', date: o.created_at, dot: 'bg-yellow-400' }]
+  ev.push(
+    o.confirmation_email_sent
+      ? { label: 'Email de confirmation envoyé', date: o.created_at, dot: 'bg-blue-400' }
+      : { label: 'Email de confirmation', date: null, dot: 'bg-blue-400', note: 'Email auto non envoyé' },
+  )
   if (o.payment_method === 'invoice_30d') {
-    ev.push({ label: 'Confirmation envoyée', date: o.confirmed_at, dot: 'bg-blue-400' })
     ev.push({ label: 'Facture générée', date: o.invoiced_at, dot: 'bg-indigo-400' })
   }
   ev.push({ label: 'Plaque configurée', date: o.configured_at, dot: 'bg-cyan-400' })
   ev.push({ label: 'Expédiée', date: o.shipped_at, dot: 'bg-violet-400' })
-  ev.push({ label: 'Paiement reçu', date: o.invoice_paid_at, dot: 'bg-emerald-400' })
+  if (o.payment_method === 'invoice_30d') {
+    ev.push({ label: 'Paiement reçu', date: o.invoice_paid_at, dot: 'bg-emerald-400' })
+  }
   ev.push({ label: 'Terminée', date: o.status === 'completed' ? o.updated_at : null, dot: 'bg-white/60' })
   return ev
 }
@@ -97,19 +103,9 @@ export default function OrderDetail({ order, onClose, onSaveNotes, onAction, onD
         </div>
 
         <div className="px-6 py-6">
-          {!order.confirmation_email_sent && (
-            <div className="mb-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 px-4 py-3">
-              <div className="flex items-start gap-2 text-[13px] text-amber-200/90">
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                <div>
-                  Email de confirmation non envoyé{order.confirmation_email_error ? ` — ${order.confirmation_email_error}` : ''}.
-                  <button
-                    onClick={async () => { if (await copyText(fullEmailText(confirmationEmail(order)))) toast('Contenu de l\'email copié ✓') }}
-                    className="block mt-2 rounded-full py-1.5 px-3 text-[12px] font-light bg-amber-500/15 text-amber-200 border border-amber-500/25 hover:bg-amber-500/25 transition-colors">
-                    Copier le contenu de l'email
-                  </button>
-                </div>
-              </div>
+          {nextAction(order) && (
+            <div className="mb-7">
+              <PrimaryActionButton order={order} size="lg" onAction={onAction} />
             </div>
           )}
 
@@ -120,6 +116,13 @@ export default function OrderDetail({ order, onClose, onSaveNotes, onAction, onD
             {order.company_name && <CopyRow label="Entreprise" value={order.company_name} />}
             <CopyRow label="Adresse" value={`${order.address}, ${order.postal_code} ${order.city}`} copy={formatAddressOneLine(order)} />
             <CopyRow label="Canton" value={order.canton} />
+            {order.payment_method === 'invoice_30d' && order.company_name && (
+              <a href={`https://www.zefix.ch/fr/search/entity/list?name=${encodeURIComponent(order.company_name)}`}
+                target="_blank" rel="noreferrer"
+                className="inline-flex items-center gap-1.5 mt-2 text-[12px] text-blue-300 underline underline-offset-2">
+                <ExternalLink className="h-3 w-3 shrink-0" />Vérifier l'entreprise sur zefix.ch
+              </a>
+            )}
           </Section>
 
           {order.google_business_url && (
@@ -174,7 +177,7 @@ export default function OrderDetail({ order, onClose, onSaveNotes, onAction, onD
                     )}
                     <div className={`text-[14px] font-light ${done ? 'text-white/80' : 'text-white/35'}`}>{e.label}</div>
                     <div className="text-[12px] text-white/40">
-                      {done ? formatDateTimeFr(e.date) : 'En attente…'}
+                      {done ? formatDateTimeFr(e.date) : (e.note ?? 'En attente…')}
                       {e.label === 'Expédiée' && order.tracking_number ? ` · suivi ${order.tracking_number}` : ''}
                     </div>
                   </div>
@@ -189,25 +192,13 @@ export default function OrderDetail({ order, onClose, onSaveNotes, onAction, onD
               className="field-input resize-none" />
           </Section>
 
-          <Section title="Actions">
-            <PrimaryActionButton order={order} size="lg" onAction={onAction} />
-            <div className="flex flex-wrap gap-2 mt-3">
-              <SecBtn label="Copier l'adresse email" onClick={async () => { if (await copyText(order.email)) toast('Adresse email copiée ✓') }} />
-              <SecBtn label="Copier l'adresse postale" onClick={async () => { if (await copyText(formatAddressOneLine(order))) toast('Adresse postale copiée ✓') }} />
-              {order.invoice_pdf_url && <SecBtn label="Télécharger facture" onClick={() => onDownloadInvoice(order)} />}
-            </div>
-          </Section>
+          {!order.confirmation_email_sent && (
+            <p className="text-[12px] text-white/35 leading-relaxed">
+              ⓘ Email de confirmation auto non envoyé (quota serveur). Le client sera informé aux étapes suivantes.
+            </p>
+          )}
         </div>
       </aside>
     </div>
-  )
-}
-
-function SecBtn({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button onClick={onClick}
-      className="rounded-full py-2 px-4 text-[12px] font-light bg-white/[0.04] text-white/70 border border-white/12 hover:bg-white/[0.08] transition-colors">
-      {label}
-    </button>
   )
 }
