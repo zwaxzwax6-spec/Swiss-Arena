@@ -13,7 +13,6 @@ import ActionModals, { type AdminAction } from '../../components/admin/ActionMod
 import OrderDetail from '../../components/admin/OrderDetail'
 import { applyAction, type AdminActionType } from '../../lib/orders'
 import { daysUntil } from '../../lib/format'
-import { copyText } from '../../lib/clipboard'
 import { downloadCsv } from '../../lib/csv'
 import { generateInvoicePdf } from '../../lib/qrbill'
 import type { Order, OrderStatus } from '../../lib/types'
@@ -84,12 +83,7 @@ export default function Dashboard() {
     try {
       const patch = applyAction(a.type, a.order, { tracking })
       await update(a.order.id, patch)
-      if (a.type === 'relance') {
-        await copyText(a.order.email)
-        toast('Email copié — envoyez votre relance')
-      } else {
-        toast('Commande mise à jour ✓')
-      }
+      toast('Commande mise à jour ✓')
       setAction(null)
     } catch {
       toast('Erreur lors de la mise à jour')
