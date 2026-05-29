@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { AlertTriangle, Inbox, Settings, Package, Clock } from 'lucide-react'
+import { AlertTriangle, Inbox, Settings, Package, Clock, CheckCircle2 } from 'lucide-react'
 import GlassCard from '../ui/GlassCard'
 import StatusBadge from './StatusBadge'
 import PrimaryActionButton from './PrimaryActionButton'
@@ -64,6 +64,8 @@ export default function TodoSections(props: Props) {
       { key: 'invoiced', icon: <Settings className="h-4 w-4 text-cyan-400" />, title: 'Facturées, à configurer', orders: by((o) => o.status === 'invoiced') },
       { key: 'configured', icon: <Package className="h-4 w-4 text-violet-400" />, title: 'Configurées, à expédier', orders: by((o) => o.status === 'configured'), extra: address },
       { key: 'await', icon: <Clock className="h-4 w-4 text-orange-400" />, title: 'Expédiées, en attente paiement', orders: by((o) => o.status === 'awaiting_payment'), extra: countdown },
+      // Stripe only — Facture orders go to awaiting_payment on ship, never 'shipped'.
+      { key: 'complete', icon: <CheckCircle2 className="h-4 w-4 text-emerald-400" />, title: 'À terminer', orders: by((o) => o.status === 'shipped') },
     ].filter((g) => g.orders.length > 0)
   }, [orders, toast])
 

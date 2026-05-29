@@ -8,6 +8,13 @@ function assertNever(x: never): never {
 // ─── Predicates ──────────────────────────────────────────────────────────────
 const TERMINAL: OrderStatus[] = ['completed', 'recovery']
 export const isPaid = (o: Order) => o.status === 'paid' || o.status === 'completed'
+/**
+ * Whether an order counts toward revenue (CA). Stripe is collected at checkout
+ * so it counts from creation onward; Facture (paid after delivery) only counts
+ * once actually paid or completed.
+ */
+export const countsForRevenue = (o: Order) =>
+  o.payment_method === 'stripe' || o.status === 'paid' || o.status === 'completed'
 export const needsAction = (o: Order) => !TERMINAL.includes(o.status)
 export const canEscalate = (o: Order) =>
   o.status === 'awaiting_payment' || o.status === 'overdue'
@@ -154,9 +161,10 @@ export interface StatKpis {
 }
 
 export function statKpis(orders: Order[], ref: Date): StatKpis {
-  // CA bucketed by order creation month (not payment date) — volume proxy for a single-SKU product.
+  // CA bucketed by order creation month. Stripe counts immediately (paid at
+  // checkout); Facture only once paid/completed. See countsForRevenue.
   const ca = orders
-    .filter((o) => isPaid(o) && isSameMonth(o.created_at, ref))
+    .filter((o) => countsForRevenue(o) && isSameMonth(o.created_at, ref))
     .reduce((s, o) => s + Number(o.amount_chf), 0)
   const monthCount = orders.filter((o) => isSameMonth(o.created_at, ref)).length
   const todo = orders.filter(needsAction).length

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextAction, applyAction, needsAction, isPaid, statKpis, echeanceInfo } from './orders'
+import { nextAction, applyAction, needsAction, isPaid, countsForRevenue, statKpis, echeanceInfo } from './orders'
 import type { Order } from './types'
 
 function makeOrder(over: Partial<Order>): Order {
@@ -120,19 +120,33 @@ describe('predicates + stats', () => {
     expect(isPaid(makeOrder({ status: 'completed' }))).toBe(true)
     expect(isPaid(makeOrder({ status: 'awaiting_payment' }))).toBe(false)
   })
-  it('statKpis sums CA from paid+completed this month and unpaid from awaiting+overdue', () => {
+  it('countsForRevenue: Stripe always, Facture only when paid/completed', () => {
+    expect(countsForRevenue(makeOrder({ payment_method: 'stripe', status: 'new' }))).toBe(true)
+    expect(countsForRevenue(makeOrder({ payment_method: 'stripe', status: 'shipped' }))).toBe(true)
+    expect(countsForRevenue(makeOrder({ payment_method: 'invoice_30d', status: 'new' }))).toBe(false)
+    expect(countsForRevenue(makeOrder({ payment_method: 'invoice_30d', status: 'awaiting_payment' }))).toBe(false)
+    expect(countsForRevenue(makeOrder({ payment_method: 'invoice_30d', status: 'paid' }))).toBe(true)
+    expect(countsForRevenue(makeOrder({ payment_method: 'invoice_30d', status: 'completed' }))).toBe(true)
+  })
+  it('CA counts every Stripe order (paid at checkout) + only paid/completed Facture orders', () => {
     const ref = new Date('2026-05-21T12:00:00Z')
     const orders = [
-      makeOrder({ status: 'completed', amount_chf: 69, created_at: '2026-05-02T00:00:00Z' }),
-      makeOrder({ status: 'paid', amount_chf: 69, created_at: '2026-05-10T00:00:00Z' }),
-      makeOrder({ status: 'awaiting_payment', amount_chf: 69, created_at: '2026-05-11T00:00:00Z' }),
-      makeOrder({ status: 'overdue', amount_chf: 69, created_at: '2026-04-01T00:00:00Z' }),
-      makeOrder({ status: 'new', amount_chf: 69, created_at: '2026-05-12T00:00:00Z' }),
+      // Stripe — count regardless of status (money already collected at checkout)
+      makeOrder({ payment_method: 'stripe', status: 'new', amount_chf: 79, created_at: '2026-05-02T00:00:00Z' }),
+      makeOrder({ payment_method: 'stripe', status: 'shipped', amount_chf: 79, created_at: '2026-05-03T00:00:00Z' }),
+      makeOrder({ payment_method: 'stripe', status: 'completed', amount_chf: 79, created_at: '2026-05-04T00:00:00Z' }),
+      // Facture — count only when paid or completed
+      makeOrder({ payment_method: 'invoice_30d', status: 'paid', amount_chf: 79, created_at: '2026-05-10T00:00:00Z' }),
+      makeOrder({ payment_method: 'invoice_30d', status: 'completed', amount_chf: 79, created_at: '2026-05-11T00:00:00Z' }),
+      makeOrder({ payment_method: 'invoice_30d', status: 'awaiting_payment', amount_chf: 79, created_at: '2026-05-12T00:00:00Z' }),
+      makeOrder({ payment_method: 'invoice_30d', status: 'overdue', amount_chf: 79, created_at: '2026-04-01T00:00:00Z' }),
+      // Out-of-month Stripe — excluded from this month's CA
+      makeOrder({ payment_method: 'stripe', status: 'completed', amount_chf: 79, created_at: '2026-04-15T00:00:00Z' }),
     ]
     const k = statKpis(orders, ref)
-    expect(k.ca).toBe(138)
-    expect(k.monthCount).toBe(4)
-    expect(k.todo).toBe(4) // new + paid + awaiting_payment + overdue (needsAction = not in completed/recovery)
-    expect(k.unpaid).toBe(138)
+    expect(k.ca).toBe(395) // 3 Stripe (May) + 2 Facture paid/completed (May) = 5 × 79
+    expect(k.monthCount).toBe(6) // orders created in May
+    expect(k.todo).toBe(5) // needsAction: new, shipped, paid, awaiting_payment, overdue
+    expect(k.unpaid).toBe(158) // awaiting_payment + overdue = 2 × 79
   })
 })
