@@ -7,3 +7,6 @@ dist-ssr
 .vercel
 .DS_Store
 *.log
+
+# Supabase CLI local state
+supabase/.temp/

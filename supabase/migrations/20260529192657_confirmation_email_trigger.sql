@@ -16,6 +16,17 @@
 alter table orders add column if not exists confirmation_email_sent boolean not null default false;
 alter table orders add column if not exists confirmation_email_error text;
 
+-- First-apply backfill: rows that predate this trigger were handled under the
+-- old manual flow, so mark them sent to avoid a spurious "non envoyé" warning.
+-- Guarded on trigger absence so re-running the migration never clobbers a
+-- genuine future send failure.
+do $$
+begin
+  if not exists (select 1 from pg_trigger where tgname = 'on_order_created') then
+    update orders set confirmation_email_sent = true where confirmation_email_sent = false;
+  end if;
+end $$;
+
 create extension if not exists pg_net;
 
 create or replace function public.trigger_send_confirmation()

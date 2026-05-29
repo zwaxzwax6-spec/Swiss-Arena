@@ -44,12 +44,16 @@ export function confirmationEmail(o: Order): EmailContent {
 
 /** Facture envoyée — invoice with QR-bill is attached, 30-day deadline starts. */
 export function invoiceEmail(o: Order): EmailContent {
+  // invoice_due_date is only persisted when the admin confirms "Facture envoyée".
+  // For the modal preview (order still 'confirmed') fall back to the date
+  // applyAction will set (now + 30 days) so the deadline is never blank.
+  const dueIso = o.invoice_due_date ?? new Date(Date.now() + 30 * 86_400_000).toISOString()
   return {
     subject: `Votre facture ${o.order_ref} — Swiss Arena`,
     body: [
       `Bonjour ${o.first_name},`,
       `Vous trouverez en pièce jointe votre facture pour la commande ${o.order_ref}, d'un montant de ${formatCHF(o.amount_chf)} CHF.`,
-      `Le paiement est dû sous 30 jours, soit au plus tard le ${formatDateFr(o.invoice_due_date)}. Le bulletin de versement QR figure sur la facture.`,
+      `Le paiement est dû sous 30 jours, soit au plus tard le ${formatDateFr(dueIso)}. Le bulletin de versement QR figure sur la facture.`,
       `Votre plaque NFC est en préparation et vous sera expédiée prochainement.`,
       SIGNATURE,
     ].join('\n\n'),

@@ -36,7 +36,9 @@ function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 /** Wrap body paragraphs in the sober, Outlook-safe HTML shell from the brief. */
@@ -120,9 +122,10 @@ function adminClient() {
 }
 
 Deno.serve(async (req) => {
-  // Auth: shared-secret header (function is verify_jwt=false).
+  // Auth: shared-secret header (function is verify_jwt=false). Fail CLOSED — if
+  // WEBHOOK_SECRET is unset/empty, reject everything rather than running open.
   const expected = Deno.env.get("WEBHOOK_SECRET");
-  if (expected && req.headers.get("x-webhook-secret") !== expected) {
+  if (!expected || req.headers.get("x-webhook-secret") !== expected) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },

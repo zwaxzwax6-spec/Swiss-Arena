@@ -76,6 +76,13 @@ describe('invoiceEmail', () => {
     expect(body).toContain(formatCHF(69))
     expect(body).toContain(formatDateFr('2026-06-28T10:00:00.000Z'))
   })
+
+  it('falls back to a +30d deadline when invoice_due_date is null (modal preview)', () => {
+    const { body } = invoiceEmail(makeOrder({ payment_method: 'invoice_30d', invoice_due_date: null }))
+    // Deadline must never render as the empty placeholder.
+    expect(body).not.toContain('au plus tard le —')
+    expect(body).toMatch(/au plus tard le \d/)
+  })
 })
 
 describe('paymentReceivedEmail', () => {

@@ -157,17 +157,15 @@ export default function ActionModals({ action, busy, onClose, onConfirm }: Props
   }
 
   if (type === 'ship') {
+    // Reflect the tracking number being typed into the previewed email.
+    const shipOrder = tracking.trim() ? { ...order, tracking_number: tracking.trim() } : order
     return (
       <Modal open onClose={onClose} title="Marquer comme expédiée ?"
         footer={<>{cancel}<Button variant="ghost" loading={busy} onClick={() => onConfirm(action, tracking)}
           className="!bg-violet-500/15 !text-violet-300 !border-violet-500/25 hover:!bg-violet-500/25">Confirmer l'expédition</Button></>}>
         <Input label="Numéro de suivi" name="tracking" optional placeholder="ex: 99.00.123456.78901234"
           value={tracking} onChange={(e) => setTracking(e.target.value)} />
-        <EmailBlock
-          order={tracking.trim() ? { ...order, tracking_number: tracking.trim() } : order}
-          email={emailForAction('ship', tracking.trim() ? { ...order, tracking_number: tracking.trim() } : order)!}
-          showPostal
-        />
+        <EmailBlock order={shipOrder} email={emailForAction('ship', shipOrder)!} showPostal />
       </Modal>
     )
   }
