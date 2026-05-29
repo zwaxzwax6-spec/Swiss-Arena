@@ -5,11 +5,12 @@ import Input from '../ui/Input'
 import { useToast } from '../ui/Toast'
 import { copyText } from '../../lib/clipboard'
 import { formatCHF, formatDateFr, formatAddressOneLine } from '../../lib/format'
-import { confirmationEmail, emailForAction, fullEmailText, type EmailContent } from '../../lib/email-templates'
+import { emailForAction, fullEmailText, type EmailContent } from '../../lib/email-templates'
 import type { AdminActionType } from '../../lib/orders'
 import type { Order } from '../../lib/types'
 
-// Action types that open a confirmation modal (generate_invoice excluded).
+// Action types that open a confirmation modal (generate_invoice runs inline
+// from inside the mark_invoiced modal, not as its own modal).
 export type ModalActionType = Exclude<AdminActionType, 'generate_invoice'>
 
 export interface AdminAction {
@@ -20,8 +21,11 @@ export interface AdminAction {
 interface Props {
   action: AdminAction | null
   busy: boolean
+  /** True while the QR-bill PDF is being generated for the open order. */
+  invoiceBusy: boolean
   onClose: () => void
   onConfirm: (action: AdminAction, tracking?: string) => void
+  onGenerateInvoice: (order: Order) => void
 }
 
 function Recap({ order }: { order: Order }) {
@@ -82,7 +86,7 @@ function EmailBlock({ order, email, showPostal }: { order: Order; email: EmailCo
   )
 }
 
-export default function ActionModals({ action, busy, onClose, onConfirm }: Props) {
+export default function ActionModals({ action, busy, invoiceBusy, onClose, onConfirm, onGenerateInvoice }: Props) {
   const [tracking, setTracking] = useState('')
   useEffect(() => setTracking(''), [action])
   if (!action) return null
@@ -91,41 +95,21 @@ export default function ActionModals({ action, busy, onClose, onConfirm }: Props
     <Button variant="ghost" onClick={onClose} disabled={busy}>Annuler</Button>
   )
 
-  if (type === 'confirm') {
-    // The confirmation email is sent AUTOMATICALLY on order creation. Only when
-    // that auto-send failed (confirmation_email_sent === false) does the admin
-    // need the manual copy CTAs to resend it.
-    const sent = order.confirmation_email_sent
-    return (
-      <Modal open onClose={onClose} title="Confirmation envoyée ?"
-        footer={<>{cancel}<Button variant="ghost" loading={busy} onClick={() => onConfirm(action)}
-          className="!bg-blue-500/15 !text-blue-300 !border-blue-500/25 hover:!bg-blue-500/25">Oui, c'est fait</Button></>}>
-        {sent ? (
-          <p className="text-[13px] text-white/70">
-            L'email de confirmation a été envoyé automatiquement à <span className="text-white/90">{order.email}</span>.
-          </p>
-        ) : (
-          <>
-            <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 px-4 py-3 text-[13px] text-amber-200/90">
-              ⚠️ L'email de confirmation automatique n'a pas pu être envoyé
-              {order.confirmation_email_error ? ` (${order.confirmation_email_error})` : ''}. Renvoyez-le manuellement :
-            </div>
-            <EmailBlock order={order} email={confirmationEmail(order)} />
-          </>
-        )}
-        <Recap order={order} />
-      </Modal>
-    )
-  }
-
   if (type === 'mark_invoiced') {
+    const hasPdf = !!order.invoice_pdf_url
     return (
-      <Modal open onClose={onClose} title="Facture envoyée ?"
+      <Modal open onClose={onClose} title="Générer la facture"
         footer={<>{cancel}<Button variant="ghost" loading={busy} onClick={() => onConfirm(action)}
-          className="!bg-indigo-500/15 !text-indigo-300 !border-indigo-500/25 hover:!bg-indigo-500/25">Oui, envoyée</Button></>}>
-        <p className="text-[13px] text-white/70">
-          Joignez la facture PDF, puis envoyez l'email ci-dessous. L'échéance 30 jours démarre à la validation.
-        </p>
+          className="!bg-indigo-500/15 !text-indigo-300 !border-indigo-500/25 hover:!bg-indigo-500/25">✓ Facture envoyée</Button></>}>
+        <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 px-4 py-3 text-[13px] text-amber-200/90">
+          ⚠️ Générez le PDF, joignez-le à l'email, puis envoyez-le. L'échéance 30 jours démarre à la validation.
+        </div>
+        <button
+          onClick={() => onGenerateInvoice(order)}
+          disabled={invoiceBusy}
+          className="my-3 inline-flex items-center gap-2 rounded-full py-2 px-4 text-[13px] font-light bg-white/[0.06] text-white/80 border border-white/15 hover:bg-white/[0.1] disabled:opacity-50 transition-colors">
+          {invoiceBusy ? 'Génération…' : hasPdf ? '✓ PDF généré — régénérer' : '📄 Générer le PDF'}
+        </button>
         <EmailBlock order={order} email={emailForAction('mark_invoiced', order)!} />
         <Recap order={order} />
       </Modal>
@@ -148,18 +132,19 @@ export default function ActionModals({ action, busy, onClose, onConfirm }: Props
   }
 
   if (type === 'configure') {
+    // Internal step — no email is sent to the client when the plaque is programmed.
     return (
-      <Modal open onClose={onClose} title="La plaque a été programmée avec le lien Google ?"
+      <Modal open onClose={onClose} title="Configurer la plaque"
         footer={<>{cancel}<Button variant="ghost" loading={busy} onClick={() => onConfirm(action)}
-          className="!bg-cyan-500/15 !text-cyan-300 !border-cyan-500/25 hover:!bg-cyan-500/25">Oui, c'est configuré</Button></>}>
-        {order.google_business_url ? (
+          className="!bg-cyan-500/15 !text-cyan-300 !border-cyan-500/25 hover:!bg-cyan-500/25">✓ Plaque configurée</Button></>}>
+        <p className="my-4 text-[13px] text-white/70">La plaque NFC a-t-elle été programmée et testée ?</p>
+        {order.google_business_url && (
           <a href={order.google_business_url} target="_blank" rel="noreferrer"
-            className="block my-4 break-all text-[13px] text-blue-300 underline underline-offset-2">
+            className="block my-2 break-all text-[13px] text-blue-300 underline underline-offset-2">
             {order.google_business_url}
           </a>
-        ) : (
-          <p className="my-4 text-[13px] text-white/55">Aucun lien Google enregistré pour cette commande.</p>
         )}
+        <Recap order={order} />
       </Modal>
     )
   }

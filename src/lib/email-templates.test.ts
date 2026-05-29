@@ -135,7 +135,6 @@ describe('fullEmailText', () => {
 describe('emailForAction', () => {
   it('maps each emailing action to a template, others to null', () => {
     const o = makeOrder()
-    expect(emailForAction('confirm', o)?.subject).toContain('confirmée')
     expect(emailForAction('mark_invoiced', o)).not.toBeNull()
     expect(emailForAction('pay', o)).not.toBeNull()
     expect(emailForAction('ship', o)).not.toBeNull()

@@ -14,7 +14,6 @@ export const canEscalate = (o: Order) =>
 
 // ─── Action descriptors ──────────────────────────────────────────────────────
 export type AdminActionType =
-  | 'confirm'
   | 'generate_invoice'
   | 'mark_invoiced'
   | 'pay'
@@ -42,31 +41,29 @@ const STYLE: Record<StyleKey, string> = {
   red: 'bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/25',
 }
 
-/** The single primary "next action" for an order, or null when terminal. */
+/**
+ * The single primary "next manual action" for an order, or null when nothing is
+ * required. Confirmation is automatic (email on insert) so it is never an action
+ * here. Stripe orders are already paid → they skip straight to configuration.
+ */
 export function nextAction(o: Order): ActionDescriptor | null {
   switch (o.status) {
     case 'new':
       return o.payment_method === 'stripe'
-        ? { type: 'pay', label: '✓ Payée', className: STYLE.emerald }
-        : { type: 'confirm', label: '✉️ Confirmée', className: STYLE.blue }
-    case 'confirmed':
-      return o.invoice_pdf_url
-        ? { type: 'mark_invoiced', label: '📤 Envoyée', className: STYLE.indigo }
-        : { type: 'generate_invoice', label: '📄 Facture', className: STYLE.indigo }
+        ? { type: 'configure', label: '⚙️ Configurer', className: STYLE.cyan }
+        : { type: 'mark_invoiced', label: '📄 Facture', className: STYLE.indigo }
     case 'invoiced':
-      return { type: 'configure', label: '⚙️ Config', className: STYLE.cyan }
-    case 'paid':
-      return o.shipped_at
-        ? { type: 'complete', label: '✅ Terminer', className: STYLE.gray }
-        : { type: 'configure', label: '⚙️ Config', className: STYLE.cyan }
+      return { type: 'configure', label: '⚙️ Configurer', className: STYLE.cyan }
     case 'configured':
       return { type: 'ship', label: '📦 Expédier', className: STYLE.violet }
     case 'shipped':
+      // Only Stripe reaches 'shipped' (Facture goes to 'awaiting_payment').
       return { type: 'complete', label: '✅ Terminer', className: STYLE.gray }
     case 'awaiting_payment':
       return { type: 'pay', label: '✓ Payée', className: STYLE.emerald }
     case 'overdue':
       return { type: 'relance', label: 'Relancer', className: STYLE.red }
+    case 'paid':
     case 'completed':
     case 'recovery':
       return null
@@ -91,8 +88,6 @@ export function applyAction(
 ): Partial<Order> {
   const now = ctx.now ?? new Date().toISOString()
   switch (type) {
-    case 'confirm':
-      return { status: 'confirmed', confirmed_at: now }
     case 'mark_invoiced':
       return {
         status: 'invoiced',

@@ -39,6 +39,11 @@ export default function Dashboard() {
   }, [session, authLoading, navigate])
 
   const selectedLive = selected ? (orders.find((o) => o.id === selected.id) ?? selected) : null
+  // Keep the open action modal bound to the live order (so e.g. invoice_pdf_url
+  // updates after "Générer le PDF" are reflected without reopening).
+  const actionLive: AdminAction | null = action
+    ? { ...action, order: orders.find((o) => o.id === action.order.id) ?? action.order }
+    : null
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -196,7 +201,8 @@ export default function Dashboard() {
         )}
       </main>
 
-      <ActionModals action={action} busy={actionBusy} onClose={() => setAction(null)} onConfirm={confirmAction} />
+      <ActionModals action={actionLive} busy={actionBusy} invoiceBusy={!!actionLive && busyId === actionLive.order.id}
+        onClose={() => setAction(null)} onConfirm={confirmAction} onGenerateInvoice={handleGenerateInvoice} />
       {selectedLive && (
         <OrderDetail order={selectedLive} onClose={() => setSelected(null)} onSaveNotes={saveNotes}
           onAction={executeAction} onDownloadInvoice={handleDownloadInvoice} />

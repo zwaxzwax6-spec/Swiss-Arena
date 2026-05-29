@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { AlertTriangle, Inbox, FileText, Settings, Package, Clock, ExternalLink } from 'lucide-react'
+import { AlertTriangle, Inbox, Settings, Package, Clock } from 'lucide-react'
 import GlassCard from '../ui/GlassCard'
 import StatusBadge from './StatusBadge'
 import PrimaryActionButton from './PrimaryActionButton'
@@ -33,16 +33,6 @@ export default function TodoSections(props: Props) {
     const by = (f: (o: Order) => boolean) =>
       orders.filter(f).sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
 
-    const googleLink = (o: Order) =>
-      o.google_business_url ? (
-        <div className="flex items-center gap-2 mt-1">
-          <a href={o.google_business_url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 text-[12px] text-blue-300 underline underline-offset-2 break-all">
-            <ExternalLink className="h-3 w-3 shrink-0" />{o.google_business_url}
-          </a>
-          <CopyBtn text={o.google_business_url} label="Lien copié ✓" toast={toast} />
-        </div>
-      ) : null
     const address = (o: Order) => (
       <div className="flex items-center gap-2 mt-1">
         <span className="text-[12px] text-white/55">{formatAddressOneLine(o)}</span>
@@ -71,10 +61,9 @@ export default function TodoSections(props: Props) {
     return [
       { key: 'overdue', icon: <AlertTriangle className="h-4 w-4 text-red-400" />, title: 'En retard', tint: 'bg-red-500/[0.03]', orders: by((o) => o.status === 'overdue'), extra: overdueExtra },
       { key: 'new', icon: <Inbox className="h-4 w-4 text-yellow-400" />, title: 'Nouvelles commandes', orders: by((o) => o.status === 'new') },
-      { key: 'confirmed', icon: <FileText className="h-4 w-4 text-indigo-400" />, title: 'Factures à générer', orders: by((o) => o.status === 'confirmed') },
-      { key: 'configure', icon: <Settings className="h-4 w-4 text-cyan-400" />, title: 'À configurer', orders: by((o) => o.status === 'invoiced' || (o.status === 'paid' && !o.shipped_at)), extra: googleLink },
-      { key: 'ship', icon: <Package className="h-4 w-4 text-violet-400" />, title: 'À expédier', orders: by((o) => o.status === 'configured'), extra: address },
-      { key: 'await', icon: <Clock className="h-4 w-4 text-orange-400" />, title: 'En attente de paiement', orders: by((o) => o.status === 'awaiting_payment'), extra: countdown },
+      { key: 'invoiced', icon: <Settings className="h-4 w-4 text-cyan-400" />, title: 'Facturées, à configurer', orders: by((o) => o.status === 'invoiced') },
+      { key: 'configured', icon: <Package className="h-4 w-4 text-violet-400" />, title: 'Configurées, à expédier', orders: by((o) => o.status === 'configured'), extra: address },
+      { key: 'await', icon: <Clock className="h-4 w-4 text-orange-400" />, title: 'Expédiées, en attente paiement', orders: by((o) => o.status === 'awaiting_payment'), extra: countdown },
     ].filter((g) => g.orders.length > 0)
   }, [orders, toast])
 
@@ -82,7 +71,7 @@ export default function TodoSections(props: Props) {
     return (
       <GlassCard className="p-12 text-center">
         <div className="text-[18px] font-extralight text-white/80">Tout est à jour ✓</div>
-        <div className="text-[13px] text-white/40 mt-1">Aucune action requise</div>
+        <div className="text-[13px] text-white/40 mt-1">Aucune action requise.</div>
       </GlassCard>
     )
   }
