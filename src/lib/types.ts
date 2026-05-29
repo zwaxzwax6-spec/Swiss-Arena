@@ -49,6 +49,11 @@ export interface Order {
   tracking_number: string | null
   notes: string | null
 
+  /** Set true by the send-confirmation-email Edge Function once the auto email is delivered. */
+  confirmation_email_sent: boolean
+  /** Last SMTP error from the auto confirmation send, if any (null when sent OK). */
+  confirmation_email_error: string | null
+
   created_at: string
   updated_at: string
 }
