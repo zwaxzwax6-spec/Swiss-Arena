@@ -81,7 +81,7 @@ export function shippedEmail(o: Order): EmailContent {
   if (o.tracking_number) {
     lines.push(`Numéro de suivi : ${o.tracking_number}`)
   }
-  lines.push(`Vous devriez la recevoir sous quelques jours ouvrés.`)
+  lines.push(`Vous devriez la recevoir sous 24h.`)
   lines.push(SIGNATURE)
   return {
     subject: `Votre commande ${o.order_ref} a été expédiée — Swiss Arena`,
@@ -89,13 +89,30 @@ export function shippedEmail(o: Order): EmailContent {
   }
 }
 
-/** Relance — payment reminder for an outstanding invoice. */
+/**
+ * Relance — payment reminder, escalating on `relance_count`:
+ *   0  → first, courteous reminder
+ *   ≥1 → firmer "dernier rappel" insisting on the imminent deadline.
+ * (relance_count is the count BEFORE this send, so 0 = the 1st relance.)
+ */
 export function relanceEmail(o: Order): EmailContent {
+  const due = formatDateFr(o.invoice_due_date)
+  if (o.relance_count >= 1) {
+    return {
+      subject: `Dernier rappel — Facture ${o.order_ref} · échéance proche — Swiss Arena`,
+      body: [
+        `Bonjour ${o.first_name},`,
+        `Malgré notre précédent rappel, la facture ${o.order_ref} d'un montant de ${formatCHF(o.amount_chf)} CHF demeure impayée, et son échéance (${due}) est désormais imminente.`,
+        `Nous vous invitons à procéder au règlement dans les meilleurs délais. En cas de difficulté, contactez-nous à contact@swissarena.ch.`,
+        SIGNATURE,
+      ].join('\n\n'),
+    }
+  }
   return {
     subject: `Rappel — Facture ${o.order_ref} en attente — Swiss Arena`,
     body: [
       `Bonjour ${o.first_name},`,
-      `Sauf erreur de notre part, la facture ${o.order_ref} d'un montant de ${formatCHF(o.amount_chf)} CHF reste en attente de règlement (échéance : ${formatDateFr(o.invoice_due_date)}).`,
+      `Sauf erreur de notre part, la facture ${o.order_ref} d'un montant de ${formatCHF(o.amount_chf)} CHF reste en attente de règlement (échéance : ${due}).`,
       `Nous vous remercions de bien vouloir procéder au paiement. Si vous l'avez déjà effectué, merci d'ignorer ce message.`,
       SIGNATURE,
     ].join('\n\n'),

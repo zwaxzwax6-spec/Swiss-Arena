@@ -108,11 +108,20 @@ describe('shippedEmail', () => {
 })
 
 describe('relanceEmail', () => {
-  it('references the outstanding invoice and due date', () => {
-    const { subject, body } = relanceEmail(makeOrder({ payment_method: 'invoice_30d' }))
-    expect(subject).toMatch(/rappel/i)
+  it('first relance (relance_count 0): courteous tone', () => {
+    const { subject, body } = relanceEmail(makeOrder({ payment_method: 'invoice_30d', relance_count: 0 }))
+    expect(subject).toMatch(/^Rappel — /)
+    expect(body).toMatch(/Sauf erreur de notre part/)
     expect(body).toContain(formatCHF(69))
     expect(body).toContain(formatDateFr('2026-06-28T10:00:00.000Z'))
+  })
+
+  it('escalates to a firmer "dernier rappel" when relance_count >= 1', () => {
+    const { subject, body } = relanceEmail(makeOrder({ payment_method: 'invoice_30d', relance_count: 1 }))
+    expect(subject).toMatch(/dernier rappel/i)
+    expect(subject).toContain('échéance proche')
+    expect(body).toContain('contact@swissarena.ch')
+    expect(body).toContain(formatCHF(69))
   })
 })
 
