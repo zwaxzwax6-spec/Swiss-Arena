@@ -120,7 +120,7 @@ describe('relanceEmail', () => {
     const { subject, body } = relanceEmail(makeOrder({ payment_method: 'invoice_30d', relance_count: 1 }))
     expect(subject).toMatch(/dernier rappel/i)
     expect(subject).toContain('échéance proche')
-    expect(body).toContain('contact@swissarena.ch')
+    expect(body).toContain('contact@swiss-arena-avis.ch')
     expect(body).toContain(formatCHF(69))
   })
 })

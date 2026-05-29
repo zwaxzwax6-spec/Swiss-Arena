@@ -14,4 +14,4 @@ export const CREDITOR = {
 
 export const IDE_TVA = 'CHE-000.000.000' // optional
 
-export const CONTACT_EMAIL = 'contact@swissarena.ch'
+export const CONTACT_EMAIL = 'contact@swiss-arena-avis.ch'

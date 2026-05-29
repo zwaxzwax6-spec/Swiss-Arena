@@ -1,6 +1,7 @@
 import type { Order } from './types'
 import type { AdminActionType } from './orders'
 import { formatCHF, formatDateFr } from './format'
+import { CONTACT_EMAIL } from './creditor'
 
 /** A copyable email: subject line + plain-text body. */
 export interface EmailContent {
@@ -103,7 +104,7 @@ export function relanceEmail(o: Order): EmailContent {
       body: [
         `Bonjour ${o.first_name},`,
         `Malgré notre précédent rappel, la facture ${o.order_ref} d'un montant de ${formatCHF(o.amount_chf)} CHF demeure impayée, et son échéance (${due}) est désormais imminente.`,
-        `Nous vous invitons à procéder au règlement dans les meilleurs délais. En cas de difficulté, contactez-nous à contact@swissarena.ch.`,
+        `Nous vous invitons à procéder au règlement dans les meilleurs délais. En cas de difficulté, contactez-nous à ${CONTACT_EMAIL}.`,
         SIGNATURE,
       ].join('\n\n'),
     }
