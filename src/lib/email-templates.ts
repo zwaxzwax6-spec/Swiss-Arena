@@ -46,8 +46,8 @@ export function confirmationEmail(o: Order): EmailContent {
 /** Facture envoyée — invoice with QR-bill is attached, 30-day deadline starts. */
 export function invoiceEmail(o: Order): EmailContent {
   // invoice_due_date is only persisted when the admin confirms "Facture envoyée".
-  // For the modal preview (order still 'confirmed') fall back to the date
-  // applyAction will set (now + 30 days) so the deadline is never blank.
+  // For the modal preview (order still 'new', before mark_invoiced applies)
+  // fall back to the date applyAction will set (now + 30 days) so it's never blank.
   const dueIso = o.invoice_due_date ?? new Date(Date.now() + 30 * 86_400_000).toISOString()
   return {
     subject: `Votre facture ${o.order_ref} — Swiss Arena`,
