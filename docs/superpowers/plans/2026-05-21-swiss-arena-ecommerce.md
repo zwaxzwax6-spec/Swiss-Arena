@@ -60,5 +60,5 @@ Reproduce exactly. Key tokens baked into Tailwind config + a small `src/index.cs
 ## Security / scope notes
 
 - Anon key only in client bundle (service_role never shipped). Admin gated by Auth + authenticated RLS.
-- Stripe = static Payment Link `https://buy.stripe.com/bJefZjb5qbUf0YH8rO4Ni01` (manual reconciliation, no webhook — per scope).
+- Stripe = static Payment Link `https://buy.stripe.com/6oU14pa1mcYjbDl8rO4Ni03` (manual reconciliation, no webhook — per scope).
 - No auto emails, no CRIF, no pg_cron, single product. `creditor.ts` carries placeholders for client legal info.

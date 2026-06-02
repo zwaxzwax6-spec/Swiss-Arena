@@ -76,7 +76,7 @@ export interface NewOrder {
 export const PRODUCT_NAME = 'Plaque NFC Swiss Arena'
 export const PRODUCT_PRICE = 79
 export const PRODUCT_PRICE_OLD = 119
-export const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/bJefZjb5qbUf0YH8rO4Ni01'
+export const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/6oU14pa1mcYjbDl8rO4Ni03'
 
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   stripe: 'Stripe',
